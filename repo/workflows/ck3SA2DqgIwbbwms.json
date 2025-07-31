@@ -1,0 +1,2149 @@
+{
+  "createdAt": "2025-07-28T15:45:45.620Z",
+  "updatedAt": "2025-07-31T17:06:07.771Z",
+  "id": "ck3SA2DqgIwbbwms",
+  "name": "[ IAmanda ] - Carrinho abandonado - part1",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        464,
+        480
+      ],
+      "id": "d45c3807-2681-42d3-bb42-e1e8ce6a1fc7",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "acesso_tray",
+          "mode": "list",
+          "cachedResultName": "acesso_tray"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "store_id",
+              "value": "760360"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3632,
+        464
+      ],
+      "id": "24fe28bc-eb15-430b-801e-608122fdd536",
+      "name": "Dados API Tray1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        5392,
+        464
+      ],
+      "id": "c6b6fa66-1cd7-4b6c-85d7-9d67258edd6d",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tb_usuarios",
+          "mode": "list",
+          "cachedResultName": "tb_usuarios"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "user_id",
+              "value": "={{ $node[\"Loop Over Items\"].json[\"user_id\"] }}"
+            },
+            {
+              "column": "telefone",
+              "value": "={{ $node[\"Loop Over Items\"].json[\"telefone\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1168,
+        480
+      ],
+      "id": "516e5bca-b453-4457-b82b-d90c8adb99fa",
+      "name": "TB Usuario Buscar dados",
+      "notesInFlow": false,
+      "notes": "Busca dados do usuário, no bano de dados"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Dados API Tray1').item.json.api_host }}/carts/{{ $('Loop Over Items').item.json.id_sessao }}?access_token={{ $('Dados API Tray1').item.json.access_token }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3872,
+        464
+      ],
+      "id": "0fc5f7b4-972a-4ce8-b3fd-10acc92e54fd",
+      "name": "Buscar dados do carrinho",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        4128,
+        432
+      ],
+      "id": "aa3c1d9f-053d-48d8-9ac6-9310ad15f1ac",
+      "name": "Agrega os dados"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $node[\"Filtra nomes do produtos e nome do cliente\"].json }}",
+        "options": {
+          "systemMessage": "=<instrucoes>  \nVocê é a Amanda, assistente virtual da loja Plantiê. Seu papel é enviar uma mensagem de follow-up simpática e personalizada para clientes que deixaram produtos no carrinho e ainda não finalizaram a compra.\n\nSiga as regras abaixo:\n\n🔍 **Regras de escolha**:  \n1. Se o carrinho contém um **vaso autoirrigável**, escolha aleatoriamente **uma das variações “tem vaso” (1 a 4)**.  \n2. Se **não contém vaso autoirrigável**, escolha aleatoriamente **uma das variações “não tem vaso” (1 a 4)**.  \n3. Sempre envie a **Mensagem 1** seguida da **Mensagem 2** da variação escolhida.  \n4. Substitua a variável `{primeiro_nome}` pelo nome do cliente.  \n5. Não retorne a mensagem com \"Mensagem 1\" ou \"Mensagem 2\" no texto.  \n6. Adicione ao final de cada Mensagem 2 o seguinte link (sem linha separando):  \n`https://www.plantie.com.br/checkout/cart?session_id={{ $('Loop Over Items').item.json.id_sessao }}&utm_source=rcart`\n\n📩 **Exemplo de envio (formato)**:  \nMensagem 1  \n(pausa de 3 segundos)  \nMensagem 2 + link\n\n⚠️ **Regras importantes**:  \n- Nunca envie a mesma variação para o mesmo cliente duas vezes seguidas.  \n- Mantenha o tom leve, informal e acolhedor.  \n- Sempre fale como se fosse uma conversa humana, com empatia.\n\n🎯 **Mensagens disponíveis**:\n\n📦 **SE TEM vaso autoirrigável**:\n\n🔹 *Variação 1*  \nOi Glaucia, tudo bem?  \nAqui é a Amanda, da Plantiê.  \nVi aqui que você tava vendo aquele vaso autoirrigável e acabou não finalizando…  \nQuero lhe ajudar, qual planta você tem e que pensou em usar o vaso autoirrigável?\n\nahh, e depois eu vejo para conseguir um cupom ou um brinde especial para você.\n\nhttps://www.plantie.com.br/checkout/cart?session_id={{ $('Loop Over Items').item.json.id_sessao }}&utm_source=rcart\n\n🔹 *Variação 2*  \nOi {primeiro_nome}, como vai?  \nAqui é a Amanda, da Plantiê.  \nVi que você tava dando uma olhadinha no vaso autoirrigável e deixou ele no carrinho...  \nEstou aqui para te ajudar! Ficou alguma dúvida?\n\nSe quiser finalizar depois, consigo ver um mimo pra você :)\n\nhttps://www.plantie.com.br/checkout/cart?session_id={{ $('Loop Over Items').item.json.id_sessao }}&utm_source=rcart\n\n🔹 *Variação 3*  \nEi {primeiro_nome}, tudo certo por aí?  \nSou a Amanda, da Plantiê.  \nVi que aquele vaso autoirrigável ficou no seu carrinho...  \nFicou alguma dúvida sobre o funcionamento ou para qual planta serve?\n\nMe chama se precisar! E quem sabe eu não consiga um brinde especial pra acompanhar 😉  \nhttps://www.plantie.com.br/checkout/cart?session_id={{ $('Loop Over Items').item.json.id_sessao }}&utm_source=rcart\n\n🔹 *Variação 4*  \nOi {primeiro_nome}, aqui é a Amanda da Plantiê.  \nVi que você deixou um vaso autoirrigável no carrinho 😅  \nPosso te auxiliar nessa escolha? Surgiu alguma dúvida?\n\nPosso conseguir um brinde exclusivo para você.\n\nhttps://www.plantie.com.br/checkout/cart?session_id={{ $('Loop Over Items').item.json.id_sessao }}&utm_source=rcart\n\n📦 **SE NÃO TEM vaso autoirrigável**:\n\n🔸 *Variação 1*  \nGlaucia, oi!  \nAqui é a Amanda, da Plantiê.  \nVi que você colocou alguns produtos no carrinho.  \nSurgiu alguma dúvida na escolha ou tem algo que eu possa ajudar?\n\nahh, e depois eu até consigo um cupom ou um brinde especial para você.\n\nhttps://www.plantie.com.br/checkout/cart?session_id={{ $('Loop Over Items').item.json.id_sessao }}&utm_source=rcart\n\n🔸 *Variação 2*  \nOi {primeiro_nome}, tudo certo?  \nSou a Amanda, da Plantiê.  \nNotei que você deixou alguns itens no carrinho…  \nSe tiver qualquer dúvida, é só me chamar aqui 🙂\n\nAhh, e depois eu até consigo um cupom ou um brinde especial para você.\n\nhttps://www.plantie.com.br/checkout/cart?session_id={{ $('Loop Over Items').item.json.id_sessao }}&utm_source=rcart\n\n🔸 *Variação 3*  \n{primeiro_nome}, oi!  \nAqui é a Amanda, da Plantiê.  \nVi que você tava escolhendo umas coisinhas no site e não chegou a finalizar…  \nSe tiver alguma dúvida ou se eu puder ajudar em algo, tô por aqui.\n\nE talvez até role um cupomzinho exclusivo 👀\n\nhttps://www.plantie.com.br/checkout/cart?session_id={{ $('Loop Over Items').item.json.id_sessao }}&utm_source=rcart\n\n🔸 *Variação 4*  \nOi {primeiro_nome}, tudo bem?  \nVi que ficou com alguns produtos no carrinho da Plantiê…  \nVocê conseguiu tirar todas as suas dúvidas?  \nComo posso te ajudar?\n\nDepois posso ver até um brinde pra te dar uma forcinha pra fechar 🙂\n\nhttps://www.plantie.com.br/checkout/cart?session_id={{ $('Loop Over Items').item.json.id_sessao }}&utm_source=rcart\n\n</instrucoes>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        4768,
+        432
+      ],
+      "id": "82493cd1-9f2f-4931-9b20-56f0a11357e4",
+      "name": "Gerar a mensagem",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        5520,
+        416
+      ],
+      "id": "aff00407-951d-477d-9ffa-9b34c3491501",
+      "name": "Envia a mensagem",
+      "credentials": {},
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const produto = $node[\"Agrega os dados\"].json[\"data\"];\n\nlet produtos = {}; // objeto ao invés de array\nlet valor = 0;\n\nproduto.forEach((item, index) => {\n  valor += Number(item.Cart.price);\n  produtos[index] = item.Cart.product_name;\n});\n\nreturn {\n  produtos, // será salvo como um objeto JSON\n  valor,\n  nome: $node[\"TB Usuario Buscar dados\"].json[\"nome\"]\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4560,
+        432
+      ],
+      "id": "a5367c69-6c28-43b3-8baa-b0d91c85002f",
+      "name": "Filtra nomes do produtos e nome do cliente"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "message",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        496
+      ],
+      "id": "52b94bfc-078c-48e1-8588-129d8c5e355d",
+      "name": "Agrega em um objeto"
+    },
+    {
+      "parameters": {
+        "jsCode": "const messages = $input.first().json.message\n\nconst novaData = new Date()\nconst horaAtual = new Date(novaData.getTime() - 3 * 60 * 60 * 1000)\n\nconst conversation = messages\n  .filter(m => m?.message?.content !== null && m?.message?.content !== undefined)\n  .map((message) => {\n    const originalDate = new Date(message.created_at)\n    const adjustedDate = new Date(originalDate.getTime() - 3 * 60 * 60 * 1000) // ajuste horário\n\n    return {\n      type: message.message.type,\n      content: message.message.content,\n      time: adjustedDate.toISOString()\n    }\n  })\n\nconversation.reverse()\n\n// Última mensagem\nconst ultimaMensagem = conversation[conversation.length - 1]\nconst horaUltimaMensagem = new Date(ultimaMensagem.time)\n\n// Cálculo do tempo decorrido\nconst tempoDecorridoMs = horaAtual - horaUltimaMensagem\nconst tempoDecorridoHour = Math.floor(tempoDecorridoMs / 60000) / 60\n\nreturn {\n  tempoDecorridoHour\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3072,
+        496
+      ],
+      "id": "0336f9e1-7024-445f-80ee-cac3bb98ce91",
+      "name": "Soma tempo da ultima mensagem1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "number",
+              "value": "={{ $node[\"Adiciona 9 e remove o 9 no numero\"].json[\"numero_com_9\"] }}@s.whatsapp.net"
+            },
+            {
+              "column": "number",
+              "value": "={{ $node[\"Adiciona 9 e remove o 9 no numero\"].json[\"numero_sem_9\"] }}s.whatsapp.net"
+            }
+          ]
+        },
+        "combineConditions": "OR",
+        "sort": {
+          "values": [
+            {
+              "column": "id",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1600,
+        480
+      ],
+      "id": "525d6991-a260-4e4a-9b02-288ee6ff693b",
+      "name": "Busca session",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "session_id",
+              "value": "={{ $node[\"Busca session\"].json[\"session_id\"] }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "id",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2320,
+        480
+      ],
+      "id": "32dd0b40-a024-4a47-811f-d9914f334174",
+      "name": "Busca conversa",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f4437de4-6625-4f9a-a4a1-28e3eacf5abb",
+              "leftValue": "={{ $node[\"Busca session\"].json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1824,
+        480
+      ],
+      "id": "4452f1f8-a7c9-4ffc-b9eb-69d966f0c820",
+      "name": "Verifica sem tem sessão aberta"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "05412ea2-f0ac-42a9-a177-7b29de3d9f99",
+              "leftValue": "={{ $node[\"Soma tempo da ultima mensagem1\"].json[\"tempoDecorridoHour\"] }}",
+              "rightValue": 0.3,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3344,
+        496
+      ],
+      "id": "7677a4a8-6c9d-432d-815e-5185f5833c84",
+      "name": "Verifica se a ultima mensagem faz 30min"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        960,
+        336
+      ],
+      "id": "6838ec37-2a8d-459b-be80-9dbaead5947b",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "session_id": "={{ $json.session_id }}",
+            "message": "={\n  \"type\":\"ai\",\n  \"content\": \"{{$node[\"Gerar a mensagem\"].json[\"output\"].replace(/\\n/g, ' ').replace(/\"/g, '').replace(/\"/g, '') }}\",\n  \"tool_calls\":[],\n  \"additional_kwargs\":{},\n  \"response_metadata\":{},\n  \"invalid_tool_calls\":[]\n}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6800,
+        416
+      ],
+      "id": "54554276-b30b-4d66-a661-e0e88c49d4b5",
+      "name": "Salva mensagem IA"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "session_id",
+              "value": "={{ $node[\"Busca session\"].json[\"session_id\"] || $node[\"Criar Sessão\"].json[\"session_id\"] }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "id",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6368,
+        416
+      ],
+      "id": "bced6121-d628-42ed-9789-dbbb03d2ca75",
+      "name": "busca session id"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "follow_count": "={{ $json.follow_count +1 }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_message",
+              "displayName": "last_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "follow_count",
+              "displayName": "follow_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "suporte",
+              "displayName": "suporte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6592,
+        416
+      ],
+      "id": "d5720439-02df-4746-b1fd-57ed4aa960d8",
+      "name": "Adiciona follow Session"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tb_follow",
+          "mode": "list",
+          "cachedResultName": "tb_follow"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "number": "={{ $node[\"TB Usuario Buscar dados\"].json[\"telefone\"] }}@s.whatsapp.net",
+            "user_id": "={{ $node[\"TB Usuario Buscar dados\"].json[\"user_id\"] }}",
+            "follow_count": 1,
+            "session_id_cart": "={{ $('Loop Over Items').item.json.id_sessao }}",
+            "last_messagem": "=\"{{ $node[\"Resposta ia\"].json[\"message\"].replace(/\\n/g, ' ') }}",
+            "valor_total_carrinho": "={{ $node[\"Filtra nomes do produtos e nome do cliente\"].json[\"valor\"] }}",
+            "session": "={{ $('busca session id').item.json.session_id }}",
+            "produtos": "={{ $node[\"Filtra nomes do produtos e nome do cliente\"].json[\"produtos\"] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_messagem",
+              "displayName": "last_messagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "follow_count",
+              "displayName": "follow_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "session_id_cart",
+              "displayName": "session_id_cart",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valor_total_carrinho",
+              "displayName": "valor_total_carrinho",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "session",
+              "displayName": "session",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "produtos",
+              "displayName": "produtos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        7888,
+        432
+      ],
+      "id": "99493f13-903e-4104-8937-b1960e6ef0dd",
+      "name": "Insere no TB follow"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "session_id": "={{ $json.session_id }}",
+            "message": "={\n  \"type\":\"system\",\n  \"content\":\"⚠️ Este cliente recebeu uma mensagem de recuperação de carrinho. Continue esse fluxo e ofereça CUPOM ou BRINDE. Ele só pode escolher um. Junto com o oferecimento do cupom, use a ferramenta recuperacao_carrinho e já envie o link do carrinho.\",\n  \"tool_calls\":[],\n  \"additional_kwargs\":{\n    \"tipo\": \"recuperacao_carrinho\"\n  },\n  \"response_metadata\":{},\n  \"invalid_tool_calls\":[]\n}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        7008,
+        416
+      ],
+      "id": "cad3a840-f32c-4ec9-82d0-ec74a0042cd2",
+      "name": "Salva mensagem System"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b76e2ee8-83ca-4b81-aac6-73d4e86b4b04",
+              "leftValue": "={{ $node[\"Verifica se tem sessao no tb follow\"].json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7424,
+        416
+      ],
+      "id": "94be2e07-1a6f-4709-a7ee-9a76ccb42d16",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tb_follow",
+          "mode": "list",
+          "cachedResultName": "tb_follow"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "number": "={{ $node[\"TB Usuario Buscar dados\"].json[\"telefone\"] }}@s.whatsapp.net",
+            "user_id": "={{ $('Verifica se o numero está correto').item.json.user_id }}",
+            "follow_count": 1,
+            "session_id_cart": "={{ $('Loop Over Items').item.json.id_sessao }}",
+            "last_messagem": "=\"{{ $node[\"Resposta ia\"].json[\"message\"].replace(/\\n/g, ' ') }}",
+            "valor_total_carrinho": "={{ $node[\"Filtra nomes do produtos e nome do cliente\"].json[\"valor\"] }}",
+            "session": "={{ $('busca session id').item.json.session_id }}",
+            "produtos": "={{ $node[\"Filtra nomes do produtos e nome do cliente\"].json[\"produtos\"] }}"
+          },
+          "matchingColumns": [
+            "session"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_messagem",
+              "displayName": "last_messagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "follow_count",
+              "displayName": "follow_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "session_id_cart",
+              "displayName": "session_id_cart",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valor_total_carrinho",
+              "displayName": "valor_total_carrinho",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "session",
+              "displayName": "session",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "produtos",
+              "displayName": "produtos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        7648,
+        400
+      ],
+      "id": "5675567e-717e-49fa-a66f-1ef1af770a1b",
+      "name": "Insere no TB follow1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "195b9e1d-c7a0-435d-9363-d89e269ed922",
+              "leftValue": "={{ $node[\"Busca session\"].json[\"follow_count\"] }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "56e2fe7c-1e08-4692-8a32-12ea65b8a466",
+              "leftValue": "={{ $node[\"Busca session\"].json[\"block\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2112,
+        496
+      ],
+      "id": "0609fb51-d3cc-401a-9c65-c74857cb1159",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "content": "# ETAPA 1 FOLLOW",
+        "height": 1060,
+        "width": 8560,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "3c5713d7-4100-429a-8cd4-d4401555abc6",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "acb191f6-b860-4e21-9705-e4fe36bc1e6a",
+              "name": "message",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5184,
+        416
+      ],
+      "id": "9cdb9436-3496-4334-b881-4d7412f39643",
+      "name": "Resposta ia"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "number": "={{ $('TB Usuario Buscar dados').item.json.telefone }}@s.whatsapp.net",
+            "status": "open",
+            "session_id": "={{ $node[\"Gerar UUID\"].json[\"data\"] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_message",
+              "displayName": "last_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "follow_count",
+              "displayName": "follow_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "suporte",
+              "displayName": "suporte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "block",
+              "displayName": "block",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3344,
+        320
+      ],
+      "id": "e2b6b2df-15c7-492f-ac10-106da2ae112c",
+      "name": "Criar Sessão"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "53715762-c7b4-4d6a-ad12-5f036c68f51f",
+              "leftValue": "={{ $node[\"Busca conversa\"].json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2528,
+        464
+      ],
+      "id": "e990f6e7-6c5a-452e-9b41-eaec06b596ba",
+      "name": "Verifica se tem conversa"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "66907d58-d558-4e52-85fa-0bce24cf4d9b",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        672
+      ],
+      "id": "2da65c36-3d1c-4eb6-bfce-fafeb6ae7c79",
+      "name": "Webhook",
+      "webhookId": "66907d58-d558-4e52-85fa-0bce24cf4d9b"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM vw_carrinhos_abandonados vca\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM tb_follow f\n  WHERE f.session_id_cart = vca.id_sessao\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -64,
+        480
+      ],
+      "id": "53135d17-6c21-41dd-97eb-434d1369f137",
+      "name": "query carrinho abandonado",
+      "notesInFlow": true,
+      "notes": "Query de busca"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM vw_carrinhos_abandonados vca\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM tb_follow f\n  WHERE f.session_id_cart = vca.id_sessao\n)\nAND vca.user_id = '{{ $node[\"Webhook\"].json[\"body\"][\"user_id\"] }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        144,
+        672
+      ],
+      "id": "971d5764-2f10-4e34-816c-3892aed43f66",
+      "name": "Query Carrinho abandonado",
+      "notesInFlow": true,
+      "notes": "Query de busca"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            },
+            {
+              "triggerAtHour": 8
+            },
+            {
+              "triggerAtHour": 9
+            },
+            {
+              "triggerAtHour": 10
+            },
+            {
+              "triggerAtHour": 11
+            },
+            {
+              "triggerAtHour": 13
+            },
+            {
+              "triggerAtHour": 14
+            },
+            {
+              "triggerAtHour": 15
+            },
+            {
+              "triggerAtHour": 16
+            },
+            {
+              "triggerAtHour": 17
+            },
+            {
+              "triggerAtHour": 18
+            },
+            {
+              "triggerAtHour": 19
+            },
+            {
+              "triggerAtHour": 20
+            },
+            {
+              "triggerAtHour": 21
+            },
+            {
+              "triggerAtHour": 22
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -528,
+        336
+      ],
+      "id": "e3bb0b96-e18f-4365-b29b-ec856ee6dbf2",
+      "name": "1h em 1h das 8 as 22",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "pedidos_tray",
+          "mode": "list",
+          "cachedResultName": "pedidos_tray"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id_sessao",
+              "value": "={{ $json.id_sessao }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        720,
+        496
+      ],
+      "id": "48371cd5-b4d8-4910-a539-544bdfde6072",
+      "name": "Tb pedidos tray, busca compra pela sessão",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const number = $('TB Usuario Buscar dados').item.json.telefone;\nlet raw = number.toString().replace(/\\D/g, ''); // remove tudo que não for dígito\n\n// Se não começa com 55, adiciona o código do Brasil\nif (!raw.startsWith('55')) {\n  raw = '55' + raw;\n}\n\n// Agora sim extrai país, DDD e trata o nono dígito\nconst codPais = raw.slice(0, 2);     // '55'\nconst ddd     = raw.slice(2, 4);     // ex: '54' ou outro\nlet numeroSem9, numeroCom9;\n\nif (raw.length === 12) {\n  // Ex: 555496040773 -> falta o 9 -> adiciona\n  numeroSem9 = raw;\n  numeroCom9 = codPais + ddd + '9' + raw.slice(4);\n} else if (raw.length === 13 && raw[4] === '9') {\n  // Ex: 5554996040773 -> já tem o 9 -> remove\n  numeroCom9 = raw;\n  numeroSem9 = codPais + ddd + raw.slice(5);\n} else {\n  // outro caso (talvez número fixo sem nono dígito padrão ou cell com 8 dígitos)\n  // aqui você pode escolher uma regra, por exemplo sempre tratar como com o 9:\n  numeroSem9 = raw.slice(0, 4) + raw.slice(5);\n  numeroCom9 = raw.slice(0, 4) + '9' + raw.slice(4);\n}\n\nreturn [\n  {\n    json: {\n      numero_com_9: numeroCom9,\n      numero_sem_9: numeroSem9,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        480
+      ],
+      "id": "e1d0dc33-6420-4b4a-8522-9c6967c97337",
+      "name": "Adiciona 9 e remove o 9 no numero"
+    },
+    {
+      "parameters": {
+        "action": "generate"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        320
+      ],
+      "id": "1e0bd075-6e05-4449-bf2f-bdc4ce5170db",
+      "name": "Gerar UUID"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tb_follow",
+          "mode": "list",
+          "cachedResultName": "tb_follow"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "session_id_cart",
+              "value": "={{ $('busca session id').item.json.session_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        7232,
+        416
+      ],
+      "id": "36c9fb93-694d-4893-8c68-903aaba0d0c4",
+      "name": "Verifica se tem sessao no tb follow",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ebca3cf6-03a6-44d1-a510-03bf93cd311d",
+              "leftValue": "={{ $node[\"Tb pedidos tray, busca compra pela sessão\"].json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        496
+      ],
+      "id": "e8aa896c-e38b-4b60-9eca-66550c5ed435",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */59 8-21 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        480
+      ],
+      "id": "7b613a57-46fa-4a2f-ba72-d648da026b5b",
+      "name": "Cada 1h minutos",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "phone",
+              "value": "={{ $json.body.telefone }}"
+            },
+            {
+              "key": "session_id",
+              "value": "={{ $json.body.id_sessao }}"
+            },
+            {
+              "key": "user_id",
+              "value": "={{ $json.body.user_id }}"
+            },
+            {
+              "key": "part",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        672
+      ],
+      "id": "7bc9997c-9080-4d7f-996d-6d894b98d116",
+      "name": "Execution Data"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "status",
+              "value": "erro"
+            },
+            {
+              "key": "message",
+              "value": "erro ao enviar via evolution"
+            },
+            {
+              "key": "detalhes",
+              "value": "={{ $json.error.details }}"
+            },
+            {
+              "key": "session_id",
+              "value": "={{ $('Loop Over Items').item.json.id_sessao }}"
+            },
+            {
+              "key": "user_id",
+              "value": "={{ $('Loop Over Items').item.json.user_id }}"
+            },
+            {
+              "key": "=telefone",
+              "value": "={{ $('Loop Over Items').item.json.telefone }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        6288,
+        720
+      ],
+      "id": "60245a3f-191a-40c4-a8d6-5fcdd06a46c9",
+      "name": "Salva Erro Evolution"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "status",
+              "value": "erro"
+            },
+            {
+              "key": "mensagem",
+              "value": "Error ao busca carrinho na Tray"
+            },
+            {
+              "key": "telefone",
+              "value": "={{ $node[\"Loop Over Items\"].json[\"telefone\"] }}"
+            },
+            {
+              "key": "user_id",
+              "value": "={{ $node[\"Loop Over Items\"].json[\"user_id\"] }}"
+            },
+            {
+              "key": "session_id",
+              "value": "={{ $node[\"Loop Over Items\"].json[\"id_sessao\"] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        4512,
+        672
+      ],
+      "id": "b057b088-966c-45c8-a6c5-0b34c108c2ba",
+      "name": "Execution Data1"
+    }
+  ],
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tb pedidos tray, busca compra pela sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados API Tray1": {
+      "main": [
+        [
+          {
+            "node": "Buscar dados do carrinho",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gerar a mensagem",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TB Usuario Buscar dados": {
+      "main": [
+        [
+          {
+            "node": "Adiciona 9 e remove o 9 no numero",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar dados do carrinho": {
+      "main": [
+        [
+          {
+            "node": "Agrega os dados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execution Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrega os dados": {
+      "main": [
+        [
+          {
+            "node": "Filtra nomes do produtos e nome do cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar a mensagem": {
+      "main": [
+        [
+          {
+            "node": "Resposta ia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtra nomes do produtos e nome do cliente": {
+      "main": [
+        [
+          {
+            "node": "Gerar a mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrega em um objeto": {
+      "main": [
+        [
+          {
+            "node": "Soma tempo da ultima mensagem1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Soma tempo da ultima mensagem1": {
+      "main": [
+        [
+          {
+            "node": "Verifica se a ultima mensagem faz 30min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca session": {
+      "main": [
+        [
+          {
+            "node": "Verifica sem tem sessão aberta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca conversa": {
+      "main": [
+        [
+          {
+            "node": "Verifica se tem conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica sem tem sessão aberta": {
+      "main": [
+        [
+          {
+            "node": "Gerar UUID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se a ultima mensagem faz 30min": {
+      "main": [
+        [
+          {
+            "node": "Dados API Tray1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva mensagem IA": {
+      "main": [
+        [
+          {
+            "node": "Salva mensagem System",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca session id": {
+      "main": [
+        [
+          {
+            "node": "Adiciona follow Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adiciona follow Session": {
+      "main": [
+        [
+          {
+            "node": "Salva mensagem IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insere no TB follow": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva mensagem System": {
+      "main": [
+        [
+          {
+            "node": "Verifica se tem sessao no tb follow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Insere no TB follow1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insere no TB follow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insere no TB follow1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Busca conversa",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Sessão": {
+      "main": [
+        [
+          {
+            "node": "Dados API Tray1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se tem conversa": {
+      "main": [
+        [
+          {
+            "node": "Dados API Tray1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agrega em um objeto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "query carrinho abandonado": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Carrinho abandonado": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tb pedidos tray, busca compra pela sessão": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adiciona 9 e remove o 9 no numero": {
+      "main": [
+        [
+          {
+            "node": "Busca session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar UUID": {
+      "main": [
+        [
+          {
+            "node": "Criar Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se tem sessao no tb follow": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "TB Usuario Buscar dados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cada 1h minutos": {
+      "main": [
+        [
+          {
+            "node": "query carrinho abandonado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data": {
+      "main": [
+        [
+          {
+            "node": "Query Carrinho abandonado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva Erro Evolution": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "user-agent": "axios/1.8.2",
+            "content-length": "137",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "n8n_webhook:5678",
+            "connection": "keep-alive"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "id_sessao": "gk70qqum6ec1kj5c92kncbd0tv",
+            "user_id": "QSSnw6wtKgqgfXtLpigZIM2XUC3jJzn/+L9sTCek/Cg=.1752859443",
+            "telefone": "5547991627801"
+          },
+          "webhookUrl": "https://n8n.plantie.com.br/webhook/66907d58-d558-4e52-85fa-0bce24cf4d9b",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "1h em 1h das 8 as 22": [
+      {
+        "json": {
+          "timestamp": "2025-07-02T09:00:13.028-03:00",
+          "Readable date": "July 2nd 2025, 9:00:13 am",
+          "Readable time": "9:00:13 am",
+          "Day of week": "Wednesday",
+          "Year": "2025",
+          "Month": "July",
+          "Day of month": "02",
+          "Hour": "09",
+          "Minute": "00",
+          "Second": "13",
+          "Timezone": "America/Sao_Paulo (UTC-03:00)"
+        }
+      }
+    ],
+    "Cada 1h minutos": [
+      {
+        "json": {
+          "timestamp": "2025-07-22T19:00:00.078-03:00",
+          "Readable date": "July 22nd 2025, 7:00:00 pm",
+          "Readable time": "7:00:00 pm",
+          "Day of week": "Tuesday",
+          "Year": "2025",
+          "Month": "July",
+          "Day of month": "22",
+          "Hour": "19",
+          "Minute": "00",
+          "Second": "00",
+          "Timezone": "America/Sao_Paulo (UTC-03:00)"
+        }
+      }
+    ]
+  },
+  "versionId": "b1d3bf32-50fb-4304-8b9c-9e2540d963f1",
+  "triggerCount": 0,
+  "tags": []
+}

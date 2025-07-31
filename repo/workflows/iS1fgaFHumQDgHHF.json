@@ -1,0 +1,319 @@
+{
+  "createdAt": "2025-07-31T17:08:44.177Z",
+  "updatedAt": "2025-07-31T19:06:15.386Z",
+  "id": "iS1fgaFHumQDgHHF",
+  "name": "Backup - Workflow",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "b04638db-dcc5-4d91-87fa-0632c533b947",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "abfb4222-ad9f-4242-9d78-4e9c88a39481",
+              "name": "username",
+              "value": "caiosantosxp",
+              "type": "string"
+            },
+            {
+              "id": "de58ceef-c39d-47c4-9cfd-fef5817c1fe0",
+              "name": "token",
+              "value": "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",
+              "type": "string"
+            },
+            {
+              "id": "f654e403-9eed-4436-91f4-f094741eb82b",
+              "name": "email",
+              "value": "caiosantosxp@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "c93f204a-d657-48cd-bd15-e6f40bae310d",
+              "name": "repo",
+              "value": "n8nbackups.git",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        0
+      ],
+      "id": "6b71f592-73af-40ad-b999-3ce5fb012d28",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "command": "ls .git"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        320,
+        0
+      ],
+      "id": "8252e232-fca3-4d11-9344-e421e7047bde",
+      "name": "Execute Command",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "command": "npx n8n export:workflow --backup --output repo/workflows/"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        976,
+        16
+      ],
+      "id": "329e1a20-b412-4d68-84d6-bbd4d7610c83",
+      "name": "Execute Command2"
+    },
+    {
+      "parameters": {
+        "command": "npx n8n export:credentials --backup --output repo/credentials/"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        16
+      ],
+      "id": "ea3f29f6-cf25-4694-ba90-8d0d69a3e9e2",
+      "name": "Execute Command3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5f06c02f-44a2-4326-a742-9baa2e113a33",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        0
+      ],
+      "id": "91526137-19f5-401d-a73d-457413697db5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "command": "=git -C . add repo/\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        16
+      ],
+      "id": "ee897cd6-0141-4bfc-8a55-443b76f96998",
+      "name": "Execute Command4"
+    },
+    {
+      "parameters": {
+        "command": "=git -C repo push"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        16
+      ],
+      "id": "039a4f71-28ab-47b7-891c-8cf6552058a1",
+      "name": "Execute Command5"
+    },
+    {
+      "parameters": {
+        "command": "=export GITHUB_USER={{ $('Edit Fields').item.json.username }}\nexport GITHUB_TOKEN={{ $('Edit Fields').item.json.token }}\nexport REPO_NAME={{ $('Edit Fields').item.json.repo }}\n\n# configurações\ngit init\ngit config user.name \"{{ $('Edit Fields').item.json.username }}\"\ngit config user.email \"{{ $('Edit Fields').item.json.email }}\"\n\necho \"# n8n Backups\" > README.md\ngit add README.md\ngit commit -m \"Initial commit: backup files\"\ngit branch -M main\ngit remote add origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${REPO_NAME}\ngit push -u origin main"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -144
+      ],
+      "id": "aaa795b2-fe10-4371-a352-0081d6d50303",
+      "name": "Execute Command6"
+    },
+    {
+      "parameters": {
+        "command": "=git -C repo commit -m \"Auto backup\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        16
+      ],
+      "id": "01be94f1-87a9-4307-b1bb-0596de4e622f",
+      "name": "Execute Command1"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command2": {
+      "main": [
+        [
+          {
+            "node": "Execute Command3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Execute Command6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Command2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command3": {
+      "main": [
+        [
+          {
+            "node": "Execute Command4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command4": {
+      "main": [
+        [
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command5": {
+      "main": [
+        []
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command6": {
+      "main": [
+        [
+          {
+            "node": "Execute Command2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "5e6e1eaa-c03e-4504-9bf1-efeb2306a43a",
+  "triggerCount": 0,
+  "tags": []
+}
