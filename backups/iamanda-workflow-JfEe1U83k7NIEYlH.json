@@ -1,0 +1,512 @@
+{
+  "createdAt": "2025-07-28T15:52:25.758Z",
+  "updatedAt": "2025-07-28T15:52:32.093Z",
+  "id": "JfEe1U83k7NIEYlH",
+  "name": "[ IAmanda ] - Controlador de Carrinho",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3cff3bcc-73af-46f5-8c59-e5cdea68947b",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        -176
+      ],
+      "id": "fc850521-98f5-4ebf-8014-11831902f6b1",
+      "name": "Webhook1",
+      "webhookId": "3cff3bcc-73af-46f5-8c59-e5cdea68947b"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://n8n_webhook:5678/webhook/66907d58-d558-4e52-85fa-0bce24cf4d9b",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $node[\"Tratamento dados\"].json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1744,
+        -176
+      ],
+      "id": "e83a6c22-9413-4949-bd6b-7d23ace6d715",
+      "name": "Enviar para schedule follow carrinho1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21933ae7-2b52-44a8-aa36-e1a7251aadcf",
+              "name": "id_sessao",
+              "value": "={{ $node[\"Webhook1\"].json[\"body\"][\"session_id\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e7dd1a0f-6639-4337-9943-4cfaab63e2a7",
+              "name": "user_id",
+              "value": "={{ $node[\"Webhook1\"].json[\"body\"][\"user_id\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "50c95e86-d1d2-45b6-ac35-5e554494d3fc",
+              "name": "telefone",
+              "value": "={{ $node[\"Busca dados usuario\"].json[\"telefone\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1536,
+        -176
+      ],
+      "id": "1af38301-b407-4e9f-a38b-ba28c192dd0c",
+      "name": "Tratamento dados"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        -176
+      ],
+      "id": "5e34fb9f-d348-4996-b957-24e11d1b4b44",
+      "name": "15 Minutos",
+      "webhookId": "ff9243fe-687c-4968-849d-ae5c4c8ef5e0"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tb_compradores",
+          "mode": "list",
+          "cachedResultName": "tb_compradores"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id_sessao",
+              "value": "={{ $node[\"Webhook1\"].json[\"body\"][\"session_id\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1136,
+        -176
+      ],
+      "id": "4de1dca2-c86a-4ca9-aa9a-9f83a9086771",
+      "name": "Busca em tb compradores",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a209f86f-7975-486c-94c2-2c56f598764d",
+              "leftValue": "={{ $node[\"Busca em tb compradores\"].json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        -176
+      ],
+      "id": "6606913a-0870-4a25-975d-7cdbdb124728",
+      "name": "Verifica se nao teve compra"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b2939afc-92dc-43ad-bb43-960d5f308301",
+              "leftValue": "={{ $node[\"Busca dados usuario\"].json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        -176
+      ],
+      "id": "066a7052-e3ab-4abb-8ce5-9acb3ab94864",
+      "name": "Se usuario nao tiver vazio"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tb_usuarios",
+          "mode": "list",
+          "cachedResultName": "tb_usuarios"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "user_id",
+              "value": "={{ $node[\"Webhook1\"].json[\"body\"][\"user_id\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        592,
+        -176
+      ],
+      "id": "71d5de00-a403-4b9d-b7f2-7439cd4ee36c",
+      "name": "Busca dados usuario",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "telefone",
+              "value": "={{ $json.body.user_data.phone_number || \"\" }}"
+            },
+            {
+              "key": "=session_id",
+              "value": "={{ $json.body.session_id || \"\" }}"
+            },
+            {
+              "key": "user_id",
+              "value": "={{ $json.body.user_id || \"\" }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -176
+      ],
+      "id": "ec347ce1-fe65-403a-9094-0f1dbedd5859",
+      "name": "Historico de Phone, User_id e Session_id"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "status",
+              "value": "enviado"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        -176
+      ],
+      "id": "7b8eb804-2b41-4d05-acb8-aa509f901738",
+      "name": "Execution Data"
+    }
+  ],
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Historico de Phone, User_id e Session_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar para schedule follow carrinho1": {
+      "main": [
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tratamento dados": {
+      "main": [
+        [
+          {
+            "node": "Enviar para schedule follow carrinho1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "15 Minutos": {
+      "main": [
+        [
+          {
+            "node": "Busca dados usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca em tb compradores": {
+      "main": [
+        [
+          {
+            "node": "Verifica se nao teve compra",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se nao teve compra": {
+      "main": [
+        [
+          {
+            "node": "Tratamento dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Se usuario nao tiver vazio": {
+      "main": [
+        [
+          {
+            "node": "Busca em tb compradores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca dados usuario": {
+      "main": [
+        [
+          {
+            "node": "Se usuario nao tiver vazio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Historico de Phone, User_id e Session_id": {
+      "main": [
+        [
+          {
+            "node": "15 Minutos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "user-agent": "axios/1.8.2",
+            "content-length": "2822",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "n8n_webhook:5678",
+            "connection": "keep-alive"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "x-ga-protocol_version": "2",
+            "x-ga-measurement_id": "G-CPM5558G29",
+            "x-ga-gtm_version": "45je57g1v886821267z8831905287za200zb831905287",
+            "x-ga-page_id": 1752859458040,
+            "x-ga-gcd": "13l3l3l3l1l1",
+            "x-ga-npa": "0",
+            "x-ga-dma": "0",
+            "x-ga-mp2-tag_exp": "101509157~103116026~103200004~103233427~103351869~103351871~104684208~104684211~104732253~104732255~104908321~104908323~104964065~104964067~104967141~104967143",
+            "client_id": "QSSnw6wtKgqgfXtLpigZIM2XUC3jJzn/+L9sTCek/Cg=.1752859443",
+            "x-ga-ecid": "491691065",
+            "language": "pt-br",
+            "screen_resolution": "412x892",
+            "x-ga-mp2-ir": "1",
+            "event_location": {
+              "country": "BR",
+              "region": "SC"
+            },
+            "client_hints": {
+              "architecture": "",
+              "bitness": "",
+              "full_version_list": [
+                {
+                  "brand": "Not)A;Brand",
+                  "version": "8.0.0.0"
+                },
+                {
+                  "brand": "Chromium",
+                  "version": "138.0.7204.157"
+                },
+                {
+                  "brand": "Google Chrome",
+                  "version": "138.0.7204.157"
+                }
+              ],
+              "mobile": true,
+              "model": "SM-S906E",
+              "platform": "Android",
+              "platform_version": "14.0.0",
+              "wow64": false
+            },
+            "x-ga-are": "1",
+            "x-ga-mp2-frm": "0",
+            "x-ga-pscdl": "noapi",
+            "user_data_mode": "c",
+            "x-ga-system_properties": {
+              "eu": [
+                4,
+                34
+              ],
+              "tu": "Dg"
+            },
+            "x-sst-system_properties": {
+              "etld": "google.com.br",
+              "tft": "1752859458040",
+              "lpc": "138455794",
+              "navt": "n",
+              "ude": "1",
+              "sw_exp": "1",
+              "request_start_time_ms": 1752859465333
+            },
+            "x-ga-request_count": 5,
+            "campaign_source": "instagrambio",
+            "currency": "BRL",
+            "ga_session_id": "1752859444",
+            "ga_session_number": 1,
+            "x-ga-mp2-seg": "1",
+            "page_location": "https://www.plantie.com.br/adubo-liquido-100-organico-1-litro-plantie",
+            "page_referrer": "https://www.plantie.com.br/?utm_source=instagrambio&fbclid=PAZXh0bgNhZW0CMTEAAae_fMsAWOgGwz9rFEq7e1-tUl7dqWtRhn6sMOkKb1gHYGbfYes3nntUkqDTdQ_aem_051uXRYrDJ9_XpbMy1wnwA",
+            "page_title": "Adubo Líquido 100% Orgânico para Suas Plantas ? Plantiê",
+            "event_name": "add_to_cart",
+            "items": [
+              {
+                "item_name": "Adubo Liquido 100% Orgânico 1 Litro - Plantiê",
+                "item_id": "937",
+                "item_category": "ADUBO E SUBSTRATO PARA PLANTAS",
+                "price": 99.9,
+                "quantity": 1
+              }
+            ],
+            "source": "instagrambio",
+            "x-fb-ud-external_id": "QSSnw6wtKgqgfXtLpigZIM2XUC3jJzn/+L9sTCek/Cg=.1752859443",
+            "value": "99.90",
+            "event_id": "1752859908203_175285971926741",
+            "x-fb-cd-content_ids": "937",
+            "x-fb-cd-content_type": "product",
+            "x-fb-cd-content_category": "ADUBO E SUBSTRATO PARA PLANTAS",
+            "x-fb-cd-content_name": "Adubo Liquido 100% Orgânico 1 Litro - Plantiê",
+            "x-fb-ck-fbp": "fb.2.1752859444205.1560684425",
+            "x-fb-ck-fbc": "fb.2.1752859444205.PAZXh0bgNhZW0CMTEAAae_fMsAWOgGwz9rFEq7e1-tUl7dqWtRhn6sMOkKb1gHYGbfYes3nntUkqDTdQ_aem_051uXRYrDJ9_XpbMy1wnwA",
+            "engagement_time_msec": 4168,
+            "user_data": {
+              "address": {
+                "country": "br",
+                "city": "sao%20paulo",
+                "region": "sp"
+              }
+            },
+            "x-ga-tfd": 7519,
+            "ip_override": "172.68.18.238",
+            "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36",
+            "session_id": "gk70qqum6ec1kj5c92kncbd0tv",
+            "user_id": "QSSnw6wtKgqgfXtLpigZIM2XUC3jJzn/+L9sTCek/Cg=.1752859443"
+          },
+          "webhookUrl": "https://n8n.plantie.com.br/webhook/3cff3bcc-73af-46f5-8c59-e5cdea68947b",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "9ad84991-010e-449e-8dfc-e36bd0a4c433",
+  "triggerCount": 0,
+  "tags": []
+}
