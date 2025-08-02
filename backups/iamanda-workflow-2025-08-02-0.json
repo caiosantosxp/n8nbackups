@@ -1,11 +1,11 @@
 {
   "data": {
-    "createdAt": "2025-07-27T16:18:29.612Z",
-    "updatedAt": "2025-07-27T16:18:29.611Z",
-    "id": "5hmrBGh7NouxWl1G",
-    "name": "IAmanda",
-    "data": "U2FsdGVkX18feKlW2VYoIRJjhJVZ9mGFM1TWd4lsoDUpkDcr7VQ7ij17yzotNA+MKAjppSGbbbzPn5UD6iq0T7U3jkuItgVsfJLpPrnoad54hi5FhFaV7X4F1L+PQpATH/nxzVhbcSngliHx3TVQNstREhzyHVHI0+kjCxwFeO4Q92bSZu4QokE4ldzlixPLv1Rbocau+gYf7Cb1rqvZ6MXyACUR62Ht2ZHBQ42+h3a/4R4hxLCmLWYgezgn+bKDtLi9vlVJe0L0/n1pOQlPvQ==",
-    "type": "openAiApi",
+    "createdAt": "2025-07-27T16:17:45.549Z",
+    "updatedAt": "2025-07-27T16:17:45.547Z",
+    "id": "7hVSNHLK8ZyeDUth",
+    "name": "Postgres account",
+    "data": "U2FsdGVkX193MDSjq8ipPvtIN7g6ygm6Z1uE1fTXJVzcyk7lkgsSkxBr4RWECY4xSG8KIw3MZr+F3fOwIHL+V+WxYexwBarRFhIgzhMXvA1cXdDBX/9E59i9Vjd+n80eu666c4Vb7KM4ORBKNCS/Zw==",
+    "type": "postgres",
     "isManaged": false
   }
 }
