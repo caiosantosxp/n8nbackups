@@ -1,11 +1,11 @@
 {
   "data": {
-    "createdAt": "2025-07-27T16:17:45.549Z",
-    "updatedAt": "2025-07-27T16:17:45.547Z",
-    "id": "7hVSNHLK8ZyeDUth",
-    "name": "Postgres account",
-    "data": "U2FsdGVkX193MDSjq8ipPvtIN7g6ygm6Z1uE1fTXJVzcyk7lkgsSkxBr4RWECY4xSG8KIw3MZr+F3fOwIHL+V+WxYexwBarRFhIgzhMXvA1cXdDBX/9E59i9Vjd+n80eu666c4Vb7KM4ORBKNCS/Zw==",
-    "type": "postgres",
+    "createdAt": "2025-07-27T16:20:06.045Z",
+    "updatedAt": "2025-07-27T16:20:06.044Z",
+    "id": "BS4J0yPCWOjMv0Cf",
+    "name": "Redis account",
+    "data": "U2FsdGVkX18SaKFC6Hn8D+qHDPvrCYx87nlNMAH173yYq8tmR3kDbrcFNtQt8YXF",
+    "type": "redis",
     "isManaged": false
   }
 }
