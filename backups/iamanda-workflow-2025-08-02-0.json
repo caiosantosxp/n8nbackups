@@ -1,11 +1,11 @@
 {
   "data": {
-    "createdAt": "2025-07-27T16:20:06.045Z",
-    "updatedAt": "2025-07-27T16:20:06.044Z",
-    "id": "BS4J0yPCWOjMv0Cf",
-    "name": "Redis account",
-    "data": "U2FsdGVkX18SaKFC6Hn8D+qHDPvrCYx87nlNMAH173yYq8tmR3kDbrcFNtQt8YXF",
-    "type": "redis",
+    "createdAt": "2025-07-31T19:18:05.173Z",
+    "updatedAt": "2025-07-31T19:31:44.040Z",
+    "id": "YTwi0KjOE7VMVGf3",
+    "name": "GitHub account",
+    "data": "U2FsdGVkX19AtnCgOBvIef7lxDTooxegcpRZe3T76VqKW0bmzJnXZLTgGWYuQ0zhJiASSzSoVClZvaDG33TQ8Tdqst0RxovEmp7XUi04Veft/MN74fstEmh3v93jg3SJtAVkgc7TtCFDiOTP9HsEkA==",
+    "type": "githubApi",
     "isManaged": false
   }
 }
