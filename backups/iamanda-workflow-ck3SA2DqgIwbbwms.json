@@ -1,0 +1,1677 @@
+{
+  "createdAt": "2025-07-28T15:45:45.620Z",
+  "updatedAt": "2025-08-20T20:20:43.828Z",
+  "id": "ck3SA2DqgIwbbwms",
+  "name": "[ IAmanda ] - Carrinho abandonado - part1",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3328,
+        672
+      ],
+      "id": "c6b6fa66-1cd7-4b6c-85d7-9d67258edd6d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "zHUbI3ImveITnHsV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\n  \"primeiro_nome\": \"{{ $node[\"Tratamento dados\"].json[\"nome\"] }}\",\n  \"lista_produtos\": \"{{ $json.produtos }}\",\n  \"link_checkout\": \"{{ $json.link_checkout }}\"\n}",
+        "options": {
+          "systemMessage": "={{ $node[\"Dados da IA1\"].json[\"prompt_system_carrinho_1\"] }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        2944,
+        656
+      ],
+      "id": "82493cd1-9f2f-4931-9b20-56f0a11357e4",
+      "name": "Gerar a mensagem",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const produtosRaw = $input.first().json.products || [];\nlet nomes = [];\nlet valor = 0;\n\n// acumula nomes e soma preços\nprodutosRaw.forEach(item => {\n  valor += Number(item.price) || 0;\n  if (item.name) nomes.push(item.name);\n});\n\nlet produtoss = {}; // objeto ao invés de array\n\nprodutosRaw.forEach((item, index) => {\n  produtoss[index] = item.name\n});\n\n// extrai o link de checkout com segurança\nconst abandoned = $node[\"Buscar carrinho Nuvemshop\"]?.json?.abandoned_checkout_url || \"\";\n\nreturn {\n  produtos: nomes,\n  produtoss,// array de nomes\n  valor,\n  link_checkout: abandoned\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2736,
+        656
+      ],
+      "id": "a5367c69-6c28-43b3-8baa-b0d91c85002f",
+      "name": "Filtra nomes do produtos e nome do cliente"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "message",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        640
+      ],
+      "id": "52b94bfc-078c-48e1-8588-129d8c5e355d",
+      "name": "Agrega em um objeto"
+    },
+    {
+      "parameters": {
+        "jsCode": "const messages = $input.first().json.message\n\nconst novaData = new Date()\nconst horaAtual = new Date(novaData.getTime() - 3 * 60 * 60 * 1000)\n\nconst conversation = messages\n  .filter(m => m?.message?.content !== null && m?.message?.content !== undefined)\n  .map((message) => {\n    const originalDate = new Date(message.created_at)\n    const adjustedDate = new Date(originalDate.getTime() - 3 * 60 * 60 * 1000) // ajuste horário\n\n    return {\n      type: message.message.type,\n      content: message.message.content,\n      time: adjustedDate.toISOString()\n    }\n  })\n\nconversation.reverse()\n\n// Última mensagem\nconst ultimaMensagem = conversation[conversation.length - 1]\nconst horaUltimaMensagem = new Date(ultimaMensagem.time)\n\n// Cálculo do tempo decorrido\nconst tempoDecorridoMs = horaAtual - horaUltimaMensagem\nconst tempoDecorridoHour = Math.floor(tempoDecorridoMs / 60000) / 60\n\nreturn {\n  tempoDecorridoHour\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1888,
+        640
+      ],
+      "id": "0336f9e1-7024-445f-80ee-cac3bb98ce91",
+      "name": "Soma tempo da ultima mensagem1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "number",
+              "value": "={{ $node[\"Adiciona 9 e remove o 9 no numero\"].json[\"numero_com_9\"] }}@s.whatsapp.net"
+            },
+            {
+              "column": "number",
+              "value": "={{ $node[\"Adiciona 9 e remove o 9 no numero\"].json[\"numero_sem_9\"] }}s.whatsapp.net"
+            }
+          ]
+        },
+        "combineConditions": "OR",
+        "sort": {
+          "values": [
+            {
+              "column": "id",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        400,
+        448
+      ],
+      "id": "525d6991-a260-4e4a-9b02-288ee6ff693b",
+      "name": "Busca session",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "session_id",
+              "value": "={{ $node[\"Busca session\"].json[\"session_id\"] }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "id",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1152,
+        544
+      ],
+      "id": "32dd0b40-a024-4a47-811f-d9914f334174",
+      "name": "Busca conversa",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f4437de4-6625-4f9a-a4a1-28e3eacf5abb",
+              "leftValue": "={{ $node[\"Busca session\"].json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        448
+      ],
+      "id": "4452f1f8-a7c9-4ffc-b9eb-69d966f0c820",
+      "name": "Verifica sem tem sessão aberta"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "session_id": "={{ $json.session_id }}",
+            "message": "={\n  \"type\":\"ai\",\n  \"content\": \"{{$node[\"Enviar Mensagem\"].json[\"message\"][\"conversation\"].replace(/\\n/g, ' ').replace(/\"/g, '').replace(/\"/g, '') }}\",\n  \"tool_calls\":[],\n  \"additional_kwargs\":{},\n  \"response_metadata\":{},\n  \"invalid_tool_calls\":[]\n}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4656,
+        816
+      ],
+      "id": "54554276-b30b-4d66-a661-e0e88c49d4b5",
+      "name": "Salva mensagem IA",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "session_id",
+              "value": "={{ $node[\"Busca session\"].json[\"session_id\"] || $node[\"Criar Sessão\"].json[\"session_id\"] }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "id",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4208,
+        816
+      ],
+      "id": "bced6121-d628-42ed-9789-dbbb03d2ca75",
+      "name": "busca session id",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "follow_count": "={{ $json.follow_count +1 }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_message",
+              "displayName": "last_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "follow_count",
+              "displayName": "follow_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "suporte",
+              "displayName": "suporte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4432,
+        816
+      ],
+      "id": "d5720439-02df-4746-b1fd-57ed4aa960d8",
+      "name": "Adiciona follow Session",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "session_id": "={{ $json.session_id }}",
+            "message": "={\n  \"type\":\"system\",\n  \"content\":\"⚠️ Este cliente recebeu uma mensagem de recuperação de carrinho. Continue esse fluxo e ofereça CUPOM. Ele só pode escolher um. Junto com o oferecimento do cupom, use a ferramenta recuperacao_carrinho e já envie o link do carrinho.\",\n  \"tool_calls\":[],\n  \"additional_kwargs\":{\n    \"tipo\": \"recuperacao_carrinho\"\n  },\n  \"response_metadata\":{},\n  \"invalid_tool_calls\":[]\n}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4880,
+        816
+      ],
+      "id": "cad3a840-f32c-4ec9-82d0-ec74a0042cd2",
+      "name": "Salva mensagem System",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tb_follow",
+          "mode": "list",
+          "cachedResultName": "tb_follow"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_cart": "={{ $node[\"Tratamento dados\"].json[\"cart_id\"] }}",
+            "follow_count": 1,
+            "last_messagem": "={{$node[\"Enviar Mensagem\"].json[\"message\"][\"conversation\"].replace(/\\n/g, ' ').replace(/\"/g, '').replace(/\"/g, '') }}",
+            "number": "={{ $node[\"Adiciona 9 e remove o 9 no numero\"].json[\"numero_com_9\"] }}",
+            "valor_total_carrinho": "={{ $node[\"Filtra nomes do produtos e nome do cliente\"].json[\"valor\"] }}",
+            "produtos": "={{ $node[\"Filtra nomes do produtos e nome do cliente\"].json[\"produtoss\"] }}",
+            "link_cart": "={{ $node[\"Buscar carrinho Nuvemshop\"].json[\"abandoned_checkout_url\"] }}",
+            "session_id": "={{ $node[\"busca session id\"].json[\"session_id\"] }}"
+          },
+          "matchingColumns": [
+            "session_cart"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "last_messagem",
+              "displayName": "last_messagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "follow_count",
+              "displayName": "follow_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "session_cart",
+              "displayName": "session_cart",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "valor_total_carrinho",
+              "displayName": "valor_total_carrinho",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "produtos",
+              "displayName": "produtos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "block",
+              "displayName": "block",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "link_cart",
+              "displayName": "link_cart",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5088,
+        816
+      ],
+      "id": "5675567e-717e-49fa-a66f-1ef1af770a1b",
+      "name": "Insere no TB follow1",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# ETAPA 1 FOLLOW",
+        "height": 820,
+        "width": 6512,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1200,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "3c5713d7-4100-429a-8cd4-d4401555abc6",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "acb191f6-b860-4e21-9705-e4fe36bc1e6a",
+              "name": "message",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3504,
+        656
+      ],
+      "id": "9cdb9436-3496-4334-b881-4d7412f39643",
+      "name": "Resposta ia"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "number": "={{ $node[\"Adiciona 9 e remove o 9 no numero\"].json[\"numero_com_9\"] }}@s.whatsapp.net",
+            "status": "open",
+            "session_id": "={{ $node[\"Gerar UUID\"].json[\"data\"] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_message",
+              "displayName": "last_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "follow_count",
+              "displayName": "follow_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "suporte",
+              "displayName": "suporte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "block",
+              "displayName": "block",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2112,
+        368
+      ],
+      "id": "e2b6b2df-15c7-492f-ac10-106da2ae112c",
+      "name": "Criar Sessão",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "53715762-c7b4-4d6a-ad12-5f036c68f51f",
+              "leftValue": "={{ $node[\"Busca conversa\"].json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1376,
+        544
+      ],
+      "id": "e990f6e7-6c5a-452e-9b41-eaec06b596ba",
+      "name": "Verifica se tem conversa"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "66907d58-d558-4e52-85fa-0bce24cf4d9b",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -768,
+        432
+      ],
+      "id": "2da65c36-3d1c-4eb6-bfce-fafeb6ae7c79",
+      "name": "Webhook",
+      "webhookId": "66907d58-d558-4e52-85fa-0bce24cf4d9b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const number = $node[\"Loop Over Items\"].json[\"telefone\"] \nlet raw = number.toString().replace(/\\D/g, ''); // remove tudo que não for dígito\n\n// Se não começa com 55, adiciona o código do Brasil\nif (!raw.startsWith('55')) {\n  raw = '55' + raw;\n}\n\n// Agora sim extrai país, DDD e trata o nono dígito\nconst codPais = raw.slice(0, 2);     // '55'\nconst ddd     = raw.slice(2, 4);     // ex: '54' ou outro\nlet numeroSem9, numeroCom9;\n\nif (raw.length === 12) {\n  // Ex: 555496040773 -> falta o 9 -> adiciona\n  numeroSem9 = raw;\n  numeroCom9 = codPais + ddd + '9' + raw.slice(4);\n} else if (raw.length === 13 && raw[4] === '9') {\n  // Ex: 5554996040773 -> já tem o 9 -> remove\n  numeroCom9 = raw;\n  numeroSem9 = codPais + ddd + raw.slice(5);\n} else {\n  // outro caso (talvez número fixo sem nono dígito padrão ou cell com 8 dígitos)\n  // aqui você pode escolher uma regra, por exemplo sempre tratar como com o 9:\n  numeroSem9 = raw.slice(0, 4) + raw.slice(5);\n  numeroCom9 = raw.slice(0, 4) + '9' + raw.slice(4);\n}\n\nreturn [\n  {\n    json: {\n      numero_com_9: numeroCom9,\n      numero_sem_9: numeroSem9,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        448
+      ],
+      "id": "e1d0dc33-6420-4b4a-8522-9c6967c97337",
+      "name": "Adiciona 9 e remove o 9 no numero"
+    },
+    {
+      "parameters": {
+        "action": "generate"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        896,
+        368
+      ],
+      "id": "1e0bd075-6e05-4449-bf2f-bdc4ce5170db",
+      "name": "Gerar UUID"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "status",
+              "value": "erro"
+            },
+            {
+              "key": "message",
+              "value": "erro ao enviar via evolution"
+            },
+            {
+              "key": "detalhes",
+              "value": "={{ $json.error.details }}"
+            },
+            {
+              "key": "session_id",
+              "value": "={{ $('Loop Over Items').item.json.id_sessao }}"
+            },
+            {
+              "key": "user_id",
+              "value": "={{ $('Loop Over Items').item.json.user_id }}"
+            },
+            {
+              "key": "=telefone",
+              "value": "={{ $('Loop Over Items').item.json.telefone }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        3984,
+        768
+      ],
+      "id": "60245a3f-191a-40c4-a8d6-5fcdd06a46c9",
+      "name": "Salva Erro Evolution"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node[\"Dados da IA1\"].json[\"url\"] }}/message/sendText/{{ $node[\"Dados da IA1\"].json[\"instancia\"] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "={{ $node[\"Dados da IA1\"].json[\"apiKey\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Adiciona 9 e remove o 9 no numero\"].json[\"numero_com_9\"] }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Resposta ia').item.json.message }}"
+            },
+            {
+              "name": "linkPreview",
+              "value": "={{ false }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3728,
+        656
+      ],
+      "id": "afbbacf0-0021-498d-935f-33263e0ca711",
+      "name": "Enviar Mensagem",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.nuvemshop.com.br/v1/2155771/carts/{{ $node[\"Tratamento dados\"].json[\"cart_id\"] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authentication",
+              "value": "bearer 76f5c7447583731ae8372f75e06bea93ea1a4b9c"
+            },
+            {
+              "name": "User-Agent",
+              "value": "IAmanda (leonardo.serafim25@gmail.com)"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event",
+              "value": "order/cancelled"
+            },
+            {
+              "name": "url",
+              "value": "https://webhook-kupaa.iamanda.com.br/webhook/13944094-8ad0-48a1-aa91-aed27f253e7b"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2464,
+        528
+      ],
+      "name": "Buscar carrinho Nuvemshop",
+      "id": "11467e87-24df-49e1-a7af-9a6a30350f73",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -304,
+        432
+      ],
+      "id": "7cf89c73-1024-45a5-988c-afca43c846dc",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "24e320ea-93d3-4c63-aace-17630db1fe75",
+              "leftValue": "={{ $node[\"Busca session\"].json[\"block\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        560
+      ],
+      "id": "18340fb2-84cb-4571-bd2b-62f6df9892a1",
+      "name": "Verifica se esta bloqueado"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9acc47fd-0db2-49db-87da-e1543d6b383b",
+              "leftValue": "={{ $node[\"Soma tempo da ultima mensagem1\"].json[\"tempoDecorridoHour\"] }}",
+              "rightValue": 0.3,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2112,
+        640
+      ],
+      "id": "f5949878-12d7-4a8b-8842-520ee75476c1",
+      "name": "Verifica se a ultima mensagem faz 30min"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  a.prompt_system_carrinho_1,\n  e.url,\n  e.\"apiKey\",\n  e.instancia-- cuidado: isso inclui url e apiKey de novo; prefira listar explicitamente o que quer\nFROM ai_agents a\nJOIN \"Evolution\" e ON a.instancia = e.id\nWHERE a.id = $1;",
+        "options": {
+          "queryReplacement": "1"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -64,
+        448
+      ],
+      "id": "8b48ed7e-8dc4-4e96-b2e6-8b68574f9a79",
+      "name": "Dados da IA1",
+      "notesInFlow": true,
+      "credentials": {
+        "postgres": {
+          "id": "Bi4m5JYnBg5yLJsa",
+          "name": "CENTRAL"
+        }
+      },
+      "notes": "Query de busca"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        432
+      ],
+      "id": "24e6f6f6-e1f8-46bd-a151-ef2e23c58238",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d54f94c-820e-4ad8-adf6-2f8061ceb445",
+              "name": "cart_id",
+              "value": "={{ $json.body.cart_id }}",
+              "type": "string"
+            },
+            {
+              "id": "9b4ff24f-b82e-4bfd-8d90-aa91f4ce998d",
+              "name": "telefone",
+              "value": "={{ $json.body.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "1998e5ce-d409-4d69-9cf0-6034ba50a00f",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "b0a8b7b8-b522-4bcf-b862-2962fea0adcd",
+              "name": "nome",
+              "value": "={{ $json.body.nome }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -544,
+        432
+      ],
+      "id": "475d1e0a-7233-48b7-93bb-d95c76e8cd95",
+      "name": "Tratamento dados"
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gerar a mensagem",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar a mensagem": {
+      "main": [
+        [
+          {
+            "node": "Resposta ia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtra nomes do produtos e nome do cliente": {
+      "main": [
+        [
+          {
+            "node": "Gerar a mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrega em um objeto": {
+      "main": [
+        [
+          {
+            "node": "Soma tempo da ultima mensagem1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Soma tempo da ultima mensagem1": {
+      "main": [
+        [
+          {
+            "node": "Verifica se a ultima mensagem faz 30min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca session": {
+      "main": [
+        [
+          {
+            "node": "Verifica sem tem sessão aberta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca conversa": {
+      "main": [
+        [
+          {
+            "node": "Verifica se tem conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica sem tem sessão aberta": {
+      "main": [
+        [
+          {
+            "node": "Gerar UUID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verifica se esta bloqueado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva mensagem IA": {
+      "main": [
+        [
+          {
+            "node": "Salva mensagem System",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca session id": {
+      "main": [
+        [
+          {
+            "node": "Adiciona follow Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adiciona follow Session": {
+      "main": [
+        [
+          {
+            "node": "Salva mensagem IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva mensagem System": {
+      "main": [
+        [
+          {
+            "node": "Insere no TB follow1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insere no TB follow1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Sessão": {
+      "main": [
+        [
+          {
+            "node": "Buscar carrinho Nuvemshop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se tem conversa": {
+      "main": [
+        [
+          {
+            "node": "Buscar carrinho Nuvemshop",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agrega em um objeto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Tratamento dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adiciona 9 e remove o 9 no numero": {
+      "main": [
+        [
+          {
+            "node": "Busca session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar UUID": {
+      "main": [
+        [
+          {
+            "node": "Criar Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva Erro Evolution": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta ia": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "busca session id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Salva Erro Evolution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar carrinho Nuvemshop": {
+      "main": [
+        [
+          {
+            "node": "Filtra nomes do produtos e nome do cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Dados da IA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se esta bloqueado": {
+      "main": [
+        [
+          {
+            "node": "Busca conversa",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se a ultima mensagem faz 30min": {
+      "main": [
+        [
+          {
+            "node": "Buscar carrinho Nuvemshop",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados da IA1": {
+      "main": [
+        [
+          {
+            "node": "Adiciona 9 e remove o 9 no numero",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        []
+      ]
+    },
+    "Tratamento dados": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "bEV4hbeNKgIZm4dF"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "user-agent": "axios/1.8.3",
+            "content-length": "107",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "n8n_webhook:5678",
+            "connection": "close"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "cart_id": "1762000395",
+            "telefone": "556478710047",
+            "email": "leonardoposedantas@gmail.com",
+            "nome": "Leonardo"
+          },
+          "webhookUrl": "https://webhook-kupaa.iamanda.com.br/webhook/66907d58-d558-4e52-85fa-0bce24cf4d9b",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Tratamento dados": [
+      {
+        "json": {
+          "cart_id": "1762000395",
+          "telefone": "5522981810890",
+          "email": "leonardoposedantas@gmail.com",
+          "nome": "Leonardo"
+        }
+      }
+    ]
+  },
+  "versionId": "3482c914-db66-492a-8756-d0544e47909c",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-07-28T15:45:45.620Z",
+      "updatedAt": "2025-07-28T15:45:45.620Z",
+      "role": "workflow:owner",
+      "workflowId": "ck3SA2DqgIwbbwms",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
