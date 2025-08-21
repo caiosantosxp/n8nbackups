@@ -1,0 +1,13 @@
+{
+  "createdAt": "2025-07-27T16:17:45.549Z",
+  "updatedAt": "2025-08-19T15:33:46.338Z",
+  "id": "7hVSNHLK8ZyeDUth",
+  "name": "Postgres account",
+  "data": {
+    "host": "postgres",
+    "database": "directus",
+    "password": "95df5aa6570ac223b4beba287a975961"
+  },
+  "type": "postgres",
+  "isManaged": false
+}
