@@ -1,0 +1,572 @@
+{
+  "createdAt": "2025-08-19T15:15:39.226Z",
+  "updatedAt": "2025-08-20T17:54:00.159Z",
+  "id": "gU9O50R9RWF3oynd",
+  "name": "[ IAmanda ] - Monitoramento",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "ai_agents",
+          "mode": "list",
+          "cachedResultName": "ai_agents"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -32,
+        656
+      ],
+      "id": "0db55f6a-6d72-4ba0-a826-b489546e59ad",
+      "name": "Configurações IA",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "numero",
+              "value": "={{ $json.body.data.key.remoteJid.split(\"@\")[1] === \"lid\" ? $json.body.data.key.senderPn : $json.body.data.key.remoteJid }}"
+            },
+            {
+              "key": "mensagem",
+              "value": "={{ $json.body.data.message.conversation || \"\" }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        656
+      ],
+      "id": "ea0b95e8-c59e-44b2-bc76-a88d371b6ca8",
+      "name": "Execution Data"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, number, session_id, status, follow_count\nFROM public.sessions\nWHERE number = ANY(\n  SELECT UNNEST(ARRAY[{{ $json[\"numbers\"].map(n => `'${n}'`).join(', ') }}]::text[])\n)\nORDER BY id DESC\nLIMIT 1;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        576,
+        656
+      ],
+      "id": "d74118e2-c283-4f6e-b5a4-a22ba8ddb316",
+      "name": "busca sessão no banco1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "monitoramento",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        656
+      ],
+      "id": "6843e1fe-8e8c-4926-9eeb-7125a9501aef",
+      "name": "Webhook EVO",
+      "webhookId": "964a7997-1877-46f8-ac46-f933ebe61047"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8f16b1bf-1a3e-4029-8d7a-1bccb919ee43",
+              "name": "message.message_id",
+              "value": "={{ $('Webhook EVO').item.json.body.data.key.id || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "11800d83-ecca-4f9c-a878-a2419db0c8e9",
+              "name": "message.chat_id",
+              "value": "={{ $('Webhook EVO').item.json.body.data.key.remoteJid.split(\"@\")[1] === \"lid\" ? $json.body.data.key.senderPn : $('Webhook EVO').item.json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "c33f9527-e661-49e5-8e5e-64f3b430928a",
+              "name": "message.content_type",
+              "value": "={{ $('Webhook EVO').item.json.body.data.message.extendedTextMessage ? 'text' : '' }}{{ $('Webhook EVO').item.json.body.data.message.conversation ? 'text' : '' }}{{ $('Webhook EVO').item.json.body.data.message.audioMessage ? 'audio' : '' }}{{ $('Webhook EVO').item.json.body.data.message.imageMessage ? 'image' : '' }}",
+              "type": "string"
+            },
+            {
+              "id": "06eba1c9-cff0-4f68-b6da-6bb0092466b7",
+              "name": "message.content",
+              "value": "={{ $('Webhook EVO').item.json.body.data.message.extendedTextMessage?.text || '' }}{{ $('Webhook EVO').item.json.body.data.message.imageMessage?.caption || '' }}{{ $('Webhook EVO').item.json.body.data.message.conversation || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "b97f1af3-5361-46fc-9303-d644921231d8",
+              "name": "message.timestamp",
+              "value": "={{ $('Webhook EVO').item.json.body.data.messageTimestamp.toDateTime('s').toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "dc3dc59c-90a3-4a45-bea2-de092c91083b",
+              "name": "message.content_url",
+              "value": "={{ $('Webhook EVO').item.json.body.data.message.audioMessage?.url || '' }}{{ $('Webhook EVO').item.json.body.data.message.imageMessage?.url || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "2b659d13-7bdf-41c4-ad2d-ef4bfff7b952",
+              "name": "message.messageTimestamp",
+              "value": "={{ $node[\"Webhook EVO\"].json[\"body\"][\"data\"][\"messageTimestamp\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "8b01a818-a456-476e-bace-adefe2f04eb4",
+              "name": "message.event",
+              "value": "={{ $('Webhook EVO').item.json.body.data.key.fromMe ? 'outcoming' : 'incoming' }}",
+              "type": "string"
+            },
+            {
+              "id": "b2f1f6b5-292f-4695-9e41-be200c6d7053",
+              "name": "instance.name",
+              "value": "={{ $node[\"Webhook EVO\"].json[\"body\"][\"instance\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "572fcce5-8a26-4e8f-a48a-ef0bee569dcd",
+              "name": "instance.apikey",
+              "value": "={{ $node[\"Webhook EVO\"].json[\"body\"][\"apikey\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e90043db-657b-461c-b040-2d6089abfbdb",
+              "name": "instance.server_url",
+              "value": "={{ $node[\"Webhook EVO\"].json[\"body\"][\"server_url\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ed2b9848-ed0b-4301-a01c-240f328a023b",
+      "name": "dados webhook",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Se você processa apenas um item:\nconst chatId = $input.first().json.message.chat_id\nconst onlyDigits = chatId.split(\"@\")[0].replace(/\\D/g, \"\");\nlet raw = onlyDigits.startsWith(\"55\") ? onlyDigits : `55${onlyDigits}`;\n\n  \nif (raw.length < 12) {\n  return [{ json: { numbers: [chatId] } }];\n}\n\nconst codPais = raw.slice(0, 2);\nconst ddd     = raw.slice(2, 4);\nconst resto   = raw.slice(4);\n\nlet numeroSem9, numeroCom9;\nif (resto.length === 8) {\n  numeroSem9 = `${codPais}${ddd}${resto}`;\n  numeroCom9 = `${codPais}${ddd}9${resto}`;\n} else if (resto.length === 9 && resto[0] === \"9\") {\n  numeroCom9 = `${codPais}${ddd}${resto}`;\n  numeroSem9 = `${codPais}${ddd}${resto.slice(1)}`;\n} else {\n  numeroSem9 = raw;\n  numeroCom9 = raw.length === 13 ? raw : `${codPais}${ddd}9${resto}`;\n}\n\nreturn [{\n  json: {\n    numbers: [\n      `${numeroCom9}@s.whatsapp.net`,\n      `${numeroSem9}@s.whatsapp.net`,\n      numeroCom9,\n      numeroSem9,\n      numeroCom9.slice(2),\n      numeroSem9.slice(2),\n    ],\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        656
+      ],
+      "id": "21644cb0-a239-4876-a6e7-7c08db6e8172",
+      "name": "Tratamento numeros"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1bdc1cc7-823c-47ff-94c6-0cc551a60cb6",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        656
+      ],
+      "id": "1d1c4a16-6a04-4194-9279-6336c45c9043",
+      "name": "Verifica se respondeu o 4 carrinho"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        656
+      ],
+      "id": "4d4dc701-c549-473a-8db9-c2fc30ded54d",
+      "name": "Avisa o suporte",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "suporte": false
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_message",
+              "displayName": "last_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "follow_count",
+              "displayName": "follow_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "suporte",
+              "displayName": "suporte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "block",
+              "displayName": "block",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1232,
+        656
+      ],
+      "id": "a7286071-e046-4b83-8d0a-075bbc98d6ed",
+      "name": "Atualiza tabela session",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Configurações IA": {
+      "main": [
+        [
+          {
+            "node": "dados webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data": {
+      "main": [
+        [
+          {
+            "node": "Configurações IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca sessão no banco1": {
+      "main": [
+        [
+          {
+            "node": "Verifica se respondeu o 4 carrinho",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook EVO": {
+      "main": [
+        []
+      ]
+    },
+    "dados webhook": {
+      "main": [
+        [
+          {
+            "node": "Tratamento numeros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tratamento numeros": {
+      "main": [
+        [
+          {
+            "node": "busca sessão no banco1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se respondeu o 4 carrinho": {
+      "main": [
+        [
+          {
+            "node": "Avisa o suporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisa o suporte": {
+      "main": [
+        [
+          {
+            "node": "Atualiza tabela session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook EVO": [
+      {
+        "json": {
+          "headers": {
+            "host": "webhook-kupaa.iamanda.com.br",
+            "user-agent": "axios/1.8.3",
+            "content-length": "1048",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "webhook-kupaa.iamanda.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "53854a3c7008",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event": "messages.upsert",
+            "instance": "iamanda-teste",
+            "data": {
+              "key": {
+                "remoteJid": "554788576788@s.whatsapp.net",
+                "fromMe": false,
+                "id": "3F3CFC8F2A2C51DD70E7",
+                "senderLid": "190653816426616@lid"
+              },
+              "pushName": "Caio Santos",
+              "status": "DELIVERY_ACK",
+              "message": {
+                "messageContextInfo": {
+                  "deviceListMetadata": {
+                    "senderKeyHash": "PeodROZmDrrMMw==",
+                    "senderTimestamp": "1755564938",
+                    "recipientKeyHash": "2XK9t2XUTM/JZA==",
+                    "recipientTimestamp": "1755553733"
+                  },
+                  "deviceListMetadataVersion": 2
+                },
+                "conversation": "Ola"
+              },
+              "contextInfo": {
+                "expiration": 0,
+                "ephemeralSettingTimestamp": "0",
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT"
+                }
+              },
+              "messageType": "conversation",
+              "messageTimestamp": 1755616561,
+              "instanceId": "c0fe9b4e-ef72-4eda-b752-1a9c15059e0d",
+              "source": "desktop",
+              "chatwootMessageId": 61,
+              "chatwootInboxId": 1,
+              "chatwootConversationId": 4
+            },
+            "destination": "https://webhook-kupaa.iamanda.com.br/webhook/kupaa",
+            "date_time": "2025-08-19T12:16:02.361Z",
+            "sender": "555496237136@s.whatsapp.net",
+            "server_url": "https://evolution-central.iamanda.com.br",
+            "apikey": "A36E4BA4735D-42B8-A4BA-3788BA91554A"
+          },
+          "webhookUrl": "https://webhook-kupaa.iamanda.com.br/webhook/monitoramento",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "9beac3ab-4095-4b1b-936f-3c586d9a6c34",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-08-19T15:15:39.226Z",
+      "updatedAt": "2025-08-19T15:15:39.226Z",
+      "role": "workflow:owner",
+      "workflowId": "gU9O50R9RWF3oynd",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
