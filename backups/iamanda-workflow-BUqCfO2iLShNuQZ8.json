@@ -1,0 +1,212 @@
+{
+  "createdAt": "2025-08-19T15:13:36.844Z",
+  "updatedAt": "2025-08-20T17:53:58.660Z",
+  "id": "BUqCfO2iLShNuQZ8",
+  "name": "[ IAmanda ] - Switch Mensagens EVO",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kupaa",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -144
+      ],
+      "id": "4ef57aac-d166-431f-8cca-68f05fa40830",
+      "name": "Webhook EVO",
+      "webhookId": "d5389edc-f4b0-4961-99c5-549ed600160e"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "numero",
+              "value": "={{ $json.body.data.key.remoteJid }}"
+            },
+            {
+              "key": "mensagem",
+              "value": "={{ $json.body.data.message.conversation }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        -144
+      ],
+      "id": "09aa4bdd-d02f-4e2e-8351-c7662950a697",
+      "name": "Execution Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook-kupaa.iamanda.com.br/webhook/agente-kupaa",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $node[\"Webhook EVO\"].json[\"body\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        -240
+      ],
+      "id": "ef245427-58b2-4052-9852-e1e2c2d8b329",
+      "name": "Agente Principal"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://webhook-kupaa.iamanda.com.br/webhook/monitoramento",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $node[\"Webhook EVO\"].json[\"body\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        -48
+      ],
+      "id": "a2a0e8aa-8943-4f7a-9c43-38b8ba415c77",
+      "name": "Monitoramento"
+    }
+  ],
+  "connections": {
+    "Webhook EVO": {
+      "main": [
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data": {
+      "main": [
+        [
+          {
+            "node": "Agente Principal",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Monitoramento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Webhook EVO": [
+      {
+        "json": {
+          "headers": {
+            "host": "webhook-kupaa.iamanda.com.br",
+            "user-agent": "axios/1.10.0",
+            "content-length": "1048",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "194.163.191.7",
+            "x-forwarded-host": "webhook-kupaa.iamanda.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "53854a3c7008",
+            "x-real-ip": "194.163.191.7"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event": "messages.upsert",
+            "instance": "iamanda-teste",
+            "data": {
+              "key": {
+                "remoteJid": "554788576788@s.whatsapp.net",
+                "fromMe": false,
+                "id": "3FAAB62D188D12FD529C",
+                "senderLid": "190653816426616@lid"
+              },
+              "pushName": "Caio Santos",
+              "status": "DELIVERY_ACK",
+              "message": {
+                "messageContextInfo": {
+                  "deviceListMetadata": {
+                    "senderKeyHash": "PeodROZmDrrMMw==",
+                    "senderTimestamp": "1755564938",
+                    "recipientKeyHash": "2XK9t2XUTM/JZA==",
+                    "recipientTimestamp": "1755553733"
+                  },
+                  "deviceListMetadataVersion": 2
+                },
+                "conversation": "Ola"
+              },
+              "contextInfo": {
+                "expiration": 0,
+                "ephemeralSettingTimestamp": "0",
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT"
+                }
+              },
+              "messageType": "conversation",
+              "messageTimestamp": 1755616480,
+              "instanceId": "c0fe9b4e-ef72-4eda-b752-1a9c15059e0d",
+              "source": "desktop",
+              "chatwootMessageId": 59,
+              "chatwootInboxId": 1,
+              "chatwootConversationId": 4
+            },
+            "destination": "https://webhook-kupaa.iamanda.com.br/webhook/kupaa",
+            "date_time": "2025-08-19T12:14:41.950Z",
+            "sender": "555496237136@s.whatsapp.net",
+            "server_url": "https://evolution-central.iamanda.com.br",
+            "apikey": "A36E4BA4735D-42B8-A4BA-3788BA91554A"
+          },
+          "webhookUrl": "https://webhook-kupaa.iamanda.com.br/webhook/kupaa",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "82757064-3c82-43eb-9ffc-5aba72013362",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-08-19T15:13:36.844Z",
+      "updatedAt": "2025-08-19T15:13:36.844Z",
+      "role": "workflow:owner",
+      "workflowId": "BUqCfO2iLShNuQZ8",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
