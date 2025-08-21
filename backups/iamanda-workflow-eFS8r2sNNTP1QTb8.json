@@ -1,0 +1,490 @@
+{
+  "createdAt": "2025-07-28T15:51:05.924Z",
+  "updatedAt": "2025-08-19T15:01:40.177Z",
+  "id": "eFS8r2sNNTP1QTb8",
+  "name": "[ IAmanda ] - Recebimento de dados do GTM",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "log-site-kupaa",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        160
+      ],
+      "id": "1c462f22-1ceb-4d6a-ba84-1200bf376946",
+      "name": "Webhook",
+      "webhookId": "871a3991-be5f-4329-b075-c76989611ab2"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tb_eventos",
+          "mode": "list",
+          "cachedResultName": "tb_eventos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "data_criacao": "={{ $now }}",
+            "nome_evento": "={{ $json.body.evento }}",
+            "source": "={{ $json.body.utm_source }}",
+            "medium": "={{ $json.body.utm_medium }}",
+            "campaign": "={{ $json.body.utm_campaign }}",
+            "content": "={{ $json.body.utm_content }}",
+            "term": "={{ $json.body.utm_term }}",
+            "cart_id": "={{ $json.body.cart_id }}",
+            "email": "={{ $json.body.email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "data_criacao",
+              "displayName": "data_criacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cart_id",
+              "displayName": "cart_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome_evento",
+              "displayName": "nome_evento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "medium",
+              "displayName": "medium",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "term",
+              "displayName": "term",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "campaign",
+              "displayName": "campaign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        144,
+        48
+      ],
+      "id": "8f1a6003-e7ff-416e-9348-e81376faebbb",
+      "name": "TB Eventos",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tb_usuarios",
+          "mode": "list",
+          "cachedResultName": "tb_usuarios"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $('Webhook').item.json.body.email }}",
+            "nome": "={{ $('Webhook').item.json.body.nome }}",
+            "telefone": "={{ $('Webhook').item.json.body.phone.replace(/\\D/g, '').replace(/^(\\+?55)?/, '55') }}"
+          },
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "data_cadastro",
+              "displayName": "data_cadastro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        368,
+        48
+      ],
+      "id": "d4ac49c5-aa3a-4dd0-b029-a316c252ee7f",
+      "name": "TB Usuarios",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Log Site",
+        "height": 80,
+        "width": 420,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -304,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "569ce16d-50ad-43ab-94c4-aabab4d1f169",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        368,
+        288
+      ],
+      "id": "111efc54-59a7-4cd1-a64e-422fdc891555",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "evento",
+              "value": "={{ $json.body.evento }}"
+            },
+            {
+              "key": "email_usuario",
+              "value": "={{ $json.body.email }}"
+            },
+            {
+              "key": "cart_id",
+              "value": "={{ $json.body.cart_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        144,
+        288
+      ],
+      "id": "eb444eba-c457-4ebb-880a-d30da21306fa",
+      "name": "Execution Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "72e943f8-1796-471c-b8e5-e1998f1ab86d",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        160
+      ],
+      "id": "8ed7b764-3a92-4404-a7ff-db5675bc36c1",
+      "name": "Email Existe"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://n8n_webhook:5678/webhook/3cff3bcc-73af-46f5-8c59-e5cdea68947b",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        288
+      ],
+      "id": "731ba1be-f95d-43a3-a651-e9a852e302f4",
+      "name": "HTTP Request"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Email Existe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TB Eventos": {
+      "main": [
+        [
+          {
+            "node": "TB Usuarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Existe": {
+      "main": [
+        [
+          {
+            "node": "TB Eventos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "bEV4hbeNKgIZm4dF"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "webhook-kupaa.iamanda.com.br",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+            "content-length": "237",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,fr;q=0.6,gl;q=0.5,es;q=0.4",
+            "content-type": "application/json",
+            "dnt": "1",
+            "origin": "https://kupaa.com.br",
+            "priority": "u=1, i",
+            "referer": "https://kupaa.com.br/",
+            "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "70.53.106.4",
+            "x-forwarded-host": "webhook-kupaa.iamanda.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "53854a3c7008",
+            "x-real-ip": "70.53.106.4"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "evento": "shipping",
+            "cart_id": 1762000395,
+            "email": "leonardoposedantas@gmail.com",
+            "phone": "+556478710047",
+            "nome": "Leonardo",
+            "utm_campaign": "campanha",
+            "utm_content": "conteudo",
+            "utm_source": "source",
+            "utm_medium": "medium",
+            "utm_term": "termo"
+          },
+          "webhookUrl": "https://webhook-kupaa.iamanda.com.br/webhook/log-site-kupaa",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "0abf8c39-8fb7-4078-a4c7-9ea10b416407",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-07-28T15:51:05.924Z",
+      "updatedAt": "2025-07-28T15:51:05.924Z",
+      "role": "workflow:owner",
+      "workflowId": "eFS8r2sNNTP1QTb8",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
