@@ -1,0 +1,77 @@
+{
+  "createdAt": "2025-08-07T22:24:04.111Z",
+  "updatedAt": "2025-08-07T22:26:55.121Z",
+  "id": "JckEAgmNCNhVNBwZ",
+  "name": "My workflow 3",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "url": "=https://mastercargo.brudam.com.br/api/v1/tracking/ocorrencias/minuta",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "codigo",
+              "value": "=68647"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "proxy": "http://fjxfvymj:sj0f6wgi17h5@23.95.150.145:6114"
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -176,
+        -512
+      ],
+      "id": "639c80db-4944-4ea5-b415-b97eb16003bc",
+      "name": "Consulta MASTERCARGO1",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "fefdd6c8-cd72-4d4e-a6bf-a4b8e40a234b",
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-08-07T22:24:04.111Z",
+      "updatedAt": "2025-08-07T22:24:04.111Z",
+      "role": "workflow:owner",
+      "workflowId": "JckEAgmNCNhVNBwZ",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
