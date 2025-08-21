@@ -1,0 +1,390 @@
+{
+  "createdAt": "2025-07-28T15:51:49.635Z",
+  "updatedAt": "2025-08-19T15:01:47.468Z",
+  "id": "eq6SxxjwPQPGdJgx",
+  "name": "[ IAmanda ] - Distribuição dados do GTM",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b7078134-000a-40bd-bbe1-98fcf4e73c56",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1568,
+        320
+      ],
+      "id": "c62a018c-9d80-496b-996d-229874792a2f",
+      "name": "Webhook",
+      "webhookId": "b7078134-000a-40bd-bbe1-98fcf4e73c56"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $node[\"Webhook\"].json[\"body\"][\"event_name\"] }}",
+                    "rightValue": "add_to_cart",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9e03f38f-22bb-43c1-92e0-4e1cf617e3bc"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Add_to_cart"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9283b621-ebf8-459f-8f57-df5e54bcc7d4",
+                    "leftValue": "={{ $node[\"Webhook\"].json[\"body\"][\"event_name\"] }}",
+                    "rightValue": "purchase",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Purchase"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f98dea91-2e1b-4f27-ad10-98cbd86197d1",
+                    "leftValue": "={{ $node[\"Webhook\"].json[\"body\"][\"event_name\"] }}",
+                    "rightValue": "begin_checkout",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Checkout"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1152,
+        320
+      ],
+      "id": "df0d9560-fe75-45fc-9cee-4653f2d0e014",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://n8n_webhook:5678/webhook/58a60f78-3e22-4d57-8168-b02b5e3b8b51",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $node[\"Webhook\"].json[\"body\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -864,
+        560
+      ],
+      "id": "3507567d-a0ec-4bba-9a52-fa9c998e9dcc",
+      "name": "Envia para Relátorio Anna"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://n8n_webhook:5678/webhook/3cff3bcc-73af-46f5-8c59-e5cdea68947b",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $node[\"Webhook\"].json[\"body\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -864,
+        128
+      ],
+      "id": "52b1b219-14eb-44ff-b4b5-ee1ebb4a0c7d",
+      "name": "Enviar para schedule follow carrinho"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "evento",
+              "value": "={{ $json.body.event_name }}"
+            },
+            {
+              "key": "session_id",
+              "value": "={{ $json.body.session_id }}"
+            },
+            {
+              "key": "user_id",
+              "value": "={{ $json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        320
+      ],
+      "id": "e149f78e-4f01-45de-9166-cdbf55d60daf",
+      "name": "Execution Data"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Enviar para schedule follow carrinho",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envia para Relátorio Anna",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar para schedule follow carrinho",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "bEV4hbeNKgIZm4dF"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "user-agent": "axios/1.8.2",
+            "content-length": "2959",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "n8n_webhook:5678",
+            "connection": "keep-alive"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "x-ga-protocol_version": "2",
+            "x-ga-measurement_id": "G-CPM5558G29",
+            "x-ga-gtm_version": "45je5791v886821267z8831905287za200zb831905287",
+            "x-ga-page_id": 1752500709247,
+            "x-ga-gcd": "13l3l3l3l1l1",
+            "x-ga-npa": "0",
+            "x-ga-dma": "0",
+            "x-ga-mp2-tag_exp": "101509157~103116026~103200004~103233427~103351869~103351871~104630776~104630778~104684208~104684211~104732253~104732255~104909302~104909304~104935091~104935093",
+            "client_id": "4XXvzfWBzYjDVH2zBjO8ZR2m3C3MV6WOa4pRTp6YM50=.1752500623",
+            "x-ga-ecid": "1695318085",
+            "language": "pt-br",
+            "screen_resolution": "320x694",
+            "x-ga-mp2-ir": "1",
+            "event_location": {
+              "country": "BR",
+              "region": "DF"
+            },
+            "client_hints": {
+              "architecture": "",
+              "bitness": "",
+              "full_version_list": [
+                {
+                  "brand": "Not)A;Brand",
+                  "version": "8.0.0.0"
+                },
+                {
+                  "brand": "Chromium",
+                  "version": "138.0.7204.63"
+                },
+                {
+                  "brand": "Google Chrome",
+                  "version": "138.0.7204.63"
+                }
+              ],
+              "mobile": true,
+              "model": "SM-S711B",
+              "platform": "Android",
+              "platform_version": "14.0.0",
+              "wow64": false
+            },
+            "x-ga-are": "1",
+            "x-ga-mp2-frm": "0",
+            "x-ga-pscdl": "noapi",
+            "user_data_mode": "c",
+            "x-ga-system_properties": {
+              "eu": [
+                4,
+                34
+              ],
+              "tu": "Dg"
+            },
+            "x-sst-system_properties": {
+              "etld": "google.com.br",
+              "tft": "1752500709247",
+              "lpc": "106013378",
+              "navt": "n",
+              "ude": "1",
+              "sw_exp": "1",
+              "request_start_time_ms": 1752500821784
+            },
+            "x-ga-request_count": 5,
+            "campaign_source": "GoogleAds",
+            "campaign_medium": "pmax",
+            "campaign_content": "",
+            "campaign_term": "",
+            "campaign_name": "OP_PMAX_MG-RS-PR-DF_5-TOP-ESTADOS-ROAS-MAIS-ALTO_TODOS-PRODUTOS_MAX-CONVERSAO",
+            "currency": "BRL",
+            "ga_session_id": "1752500624",
+            "ga_session_number": 1,
+            "x-ga-mp2-seg": "1",
+            "page_location": "https://www.plantie.com.br/kit-cachepos-24-x-29-cm-terracota-vasos-grandes-urban-jungle-plantie",
+            "page_referrer": "https://www.plantie.com.br/cachepot",
+            "page_title": "Kit Cachepots 24 X 29 cm Terracota - Vasos Grandes Urban Jungle Plantiê - Plantie - Semeando Natureza, Cultivando Bem-Estar",
+            "event_name": "add_to_cart",
+            "items": [
+              {
+                "item_name": "Kit Cachepots 24 X 29 cm Terracota - Vasos Grandes Urban Jungle Plantiê",
+                "item_id": "757",
+                "item_category": "CACHEPOT GRANDE",
+                "price": 247.1,
+                "quantity": 1
+              }
+            ],
+            "source": "GoogleAds",
+            "medium": "pmax",
+            "campaign": "OP_PMAX_MG-RS-PR-DF_5-TOP-ESTADOS-ROAS-MAIS-ALTO_TODOS-PRODUTOS_MAX-CONVERSAO",
+            "content": "",
+            "term": "",
+            "x-fb-ud-external_id": "4XXvzfWBzYjDVH2zBjO8ZR2m3C3MV6WOa4pRTp6YM50=.1752500623",
+            "value": "247.10",
+            "event_id": "1752500936770_175250147827146",
+            "x-fb-cd-content_ids": "757",
+            "x-fb-cd-content_type": "product",
+            "x-fb-cd-content_category": "CACHEPOT GRANDE",
+            "x-fb-cd-content_name": "Kit Cachepots 24 X 29 cm Terracota - Vasos Grandes Urban Jungle Plantiê",
+            "x-fb-ck-fbp": "fb.2.1752500628021.1307904589",
+            "engagement_time_msec": 107299,
+            "user_data": {
+              "address": {
+                "country": "br",
+                "city": "rio%20de%20janeiro",
+                "region": "rj"
+              }
+            },
+            "x-ga-tfd": 109125,
+            "ip_override": "172.70.140.247",
+            "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36",
+            "session_id": "gbo2c0rlns7damnbrvgh8496qg",
+            "user_id": "4XXvzfWBzYjDVH2zBjO8ZR2m3C3MV6WOa4pRTp6YM50=.1752500623"
+          },
+          "webhookUrl": "https://n8n.plantie.com.br/webhook/b7078134-000a-40bd-bbe1-98fcf4e73c56",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "39f28c40-9655-4111-aedd-535338287482",
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-07-28T15:51:49.635Z",
+      "updatedAt": "2025-07-28T15:51:49.635Z",
+      "role": "workflow:owner",
+      "workflowId": "eq6SxxjwPQPGdJgx",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
