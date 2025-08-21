@@ -1,0 +1,13 @@
+{
+  "createdAt": "2025-08-19T15:33:21.182Z",
+  "updatedAt": "2025-08-19T15:34:03.162Z",
+  "id": "Bi4m5JYnBg5yLJsa",
+  "name": "CENTRAL",
+  "data": {
+    "host": "194.163.191.7",
+    "database": "directus",
+    "password": "4877e45ae09a718ea8bf23cea82735a6"
+  },
+  "type": "postgres",
+  "isManaged": false
+}
