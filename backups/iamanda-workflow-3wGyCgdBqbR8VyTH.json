@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-07-28T15:42:43.784Z",
-  "updatedAt": "2025-07-31T17:08:04.944Z",
+  "updatedAt": "2025-08-19T15:01:55.006Z",
   "id": "3wGyCgdBqbR8VyTH",
   "name": "[ IAmanda ] - Tools - Encaminhando de mensagem",
   "active": true,
@@ -537,7 +537,9 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "bEV4hbeNKgIZm4dF"
   },
   "staticData": null,
   "meta": {
@@ -573,7 +575,7 @@
       }
     ]
   },
-  "versionId": "003b8d4a-ae19-4bda-b29d-dce7fcde4ec7",
+  "versionId": "270080cc-c4de-45b8-ae57-86c53a0e1de0",
   "triggerCount": 1,
   "tags": []
 }
