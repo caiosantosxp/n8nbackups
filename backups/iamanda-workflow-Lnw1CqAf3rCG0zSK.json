@@ -1,0 +1,1472 @@
+{
+  "createdAt": "2025-08-19T15:49:12.730Z",
+  "updatedAt": "2025-08-20T17:53:54.383Z",
+  "id": "Lnw1CqAf3rCG0zSK",
+  "name": "[ IAmanda ] - Order Bump",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://evolution.plantie.com.br/message/sendText/Atendimento",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "9C3CA760CA29-4246-9084-0418B5B53C2B"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Variaçoes de numeros\"].json[\"numbers\"][\"2\"] }}"
+            },
+            {
+              "name": "text",
+              "value": "=Oooi, que surpresa maravilhosa!! 💐🎁\n\nSeu pedido foi confirmado e você tem direito a uma condição exclusiva aqui pelo WhatsApp só no pix.\n\nLeve mais 2 pares de meias (de R$ 158 por R$ 138) e eu envio junto com seu pedido com frete grátis.\n\nManda um \"ok\" que eu te passo a chave pix pra finalizar."
+            },
+            {
+              "name": "delay",
+              "value": "={{ 1200 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1184,
+        272
+      ],
+      "id": "53bd6bef-d6f4-4b41-b30e-8c66ca8be9ee",
+      "name": "Envia mensagem de Order Bump",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "order_bump",
+          "mode": "list",
+          "cachedResultName": "order_bump"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "status": "mensagem_enviada",
+            "numero": "={{ $node[\"Envia mensagem de Order Bump\"].json[\"key\"][\"remoteJid\"] }}",
+            "email": "={{ $node[\"Tratamento de dados\"].json[\"email\"] }}",
+            "session_cart": "={{ $node[\"Tratamento de dados\"].json[\"session_id\"] }}",
+            "valor": "={{ $node[\"FLUXO VENDA NUVEMSHOP\"].json[\"body\"][\"total\"] }}",
+            "contagem_order_bump": "1",
+            "data_compra": "={{ $node[\"Tratamento de dados\"].json[\"created_at\"] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "numero",
+              "displayName": "numero",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contagem_order_bump",
+              "displayName": "contagem_order_bump",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valor",
+              "displayName": "valor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "session_cart",
+              "displayName": "session_cart",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_compra",
+              "displayName": "data_compra",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1392,
+        272
+      ],
+      "id": "73bdd303-0895-43cd-8bcb-86484286c8fb",
+      "name": "Salva dados banco order bump",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chatwoot.plantie.com.br/api/v1/accounts/3/contacts/filter",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "RxX4joJ787xYLBZ6ihGtdioZ"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"payload\": [\n    {\n      \"attribute_key\": \"identifier\",\n      \"filter_operator\": \"equal_to\",\n      \"values\": [\n        \"{{ $node[\"Envia mensagem de Order Bump\"].json[\"key\"][\"remoteJid\"] }}\"\n      ],\n      \"query_operator\": null\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        800
+      ],
+      "id": "91fb68d7-10f9-4dab-8702-f578efddb104",
+      "name": "Busca dados do usuario chatwoot"
+    },
+    {
+      "parameters": {
+        "url": "=https://chatwoot.plantie.com.br/api/v1/accounts/3/contacts/{{ $node[\"Busca dados do usuario chatwoot\"].json[\"payload\"][\"0\"][\"id\"] }}/conversations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "RxX4joJ787xYLBZ6ihGtdioZ"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        800
+      ],
+      "id": "e2acbc51-eca6-45de-8ce6-085e8a127e05",
+      "name": "Busca a conversas"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.first().json.payload;\n\nfor (const item of items) {\n  console.log(item.inbox_id);\n\n  if (item.inbox_id === 7) {\n    // Clona e atualiza as labels\n    const updatedLabels = [...(item.labels || []), 'order-bump', 'ia_desativada'];\n\n    return [{\n      json: {\n        conversation_id: item.id,\n        labels: updatedLabels\n      }\n    }];\n  }\n}\n\nreturn [{ json: { inbox: null } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        800
+      ],
+      "id": "87e53746-a769-433a-908c-5d0028e3fb50",
+      "name": "Filtra pela conversa do Atendimento"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chatwoot.plantie.com.br/api/v1/accounts/3/conversations/{{ $json.conversation_id }}/labels",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "RxX4joJ787xYLBZ6ihGtdioZ"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"labels\": {{ $json.labels.toJsonString() }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        784,
+        800
+      ],
+      "id": "bc91cab1-c43e-48ec-8542-8771d6d10015",
+      "name": "Adiciona a Tag"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        800
+      ],
+      "id": "3295402a-c829-4d61-885c-269e6d4f6dcf",
+      "name": "Wait",
+      "webhookId": "5a90a0dc-7839-47f3-a4ba-ffbedebe2da0"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://evolution.plantie.com.br/message/sendText/Atendimento",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "9C3CA760CA29-4246-9084-0418B5B53C2B"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "=5554996376315"
+            },
+            {
+              "name": "text",
+              "value": "=O cliente respondeu ✅\nA chave PIX foi enviada para ele com sucesso! 💸\nAgora é só aguardar o pagamento. 😉"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        976,
+        800
+      ],
+      "id": "0f0edf0a-2c15-442a-96ad-568d61aea549",
+      "name": "Enviar mensagem para Leo"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "phone",
+              "value": "={{ $json.body.contact_phone }}"
+            },
+            {
+              "key": "session_id",
+              "value": "={{ $json.body.id }}"
+            },
+            {
+              "key": "email",
+              "value": "={{ $json.body.contact_email }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        288
+      ],
+      "id": "1e5804af-78a3-464a-ac20-f0eeb26b0a7c",
+      "name": "Execution Data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bc3b2704-71b2-4a01-8ede-9427b36f40e9",
+              "name": "session_id",
+              "value": "={{ $json.session_id }}",
+              "type": "string"
+            },
+            {
+              "id": "089ce125-b4c1-458a-98f8-bce5769bfe8d",
+              "name": "follow_count",
+              "value": "={{ $json.follow_count }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        272
+      ],
+      "id": "dc870ef8-7e2b-4883-994d-b95122d64257",
+      "name": "Guarda Session Id"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4a6d9aac-8565-4c58-abe3-8741393a5535",
+              "leftValue": "={{ $node[\"busca sessão no banco\"].json[\"session_id\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "7fcf82c0-ddd1-4b17-af4d-b5db883476f7",
+              "leftValue": "={{ $node[\"busca sessão no banco\"].json[\"status\"] }}",
+              "rightValue": "open",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        112,
+        288
+      ],
+      "id": "56dad766-9dd4-485a-93fa-7ecfb506dfd9",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "action": "generate"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        336,
+        432
+      ],
+      "id": "8d266aa7-7e0b-452c-a30f-8ac07bca34e4",
+      "name": "Gerar sessionID"
+    },
+    {
+      "parameters": {
+        "content": "# Gera/Consulta sessionId",
+        "height": 80,
+        "width": 596,
+        "color": 5
+      },
+      "id": "3139cfe2-b466-46e7-b049-d91cb8dae7a3",
+      "name": "Sticky Note25",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        32,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, number, session_id, status, follow_count\nFROM public.sessions\nWHERE number = ANY(\n  SELECT UNNEST(ARRAY[{{ $json[\"numbers\"].map(n => `'${n}'`).join(', ') }}]::text[])\n)\nORDER BY id DESC\nLIMIT 1;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -64,
+        288
+      ],
+      "id": "33b08381-6b17-4727-925c-35d03b3c07c9",
+      "name": "busca sessão no banco",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "number": "={{ $node[\"Verificar numero\"].json[\"jid\"] }}",
+            "status": "open",
+            "session_id": "={{ $('Gerar sessionID').item.json.data }}",
+            "follow_count": 0
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_message",
+              "displayName": "last_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "follow_count",
+              "displayName": "follow_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "suporte",
+              "displayName": "suporte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "block",
+              "displayName": "block",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        752,
+        432
+      ],
+      "id": "13389a91-20aa-449f-a1b2-a2f99802e114",
+      "name": "salva o session id no banco",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "259f055b-fe8c-4d7a-bce0-49314ef0035a",
+              "name": "sessionId",
+              "value": "={{ $json.session_id }}",
+              "type": "string"
+            },
+            {
+              "id": "cef5fe48-52f2-47bd-8261-9dcb52fa71d1",
+              "name": "follow_count",
+              "value": "={{ $json.follow_count }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        272
+      ],
+      "id": "eacf1379-f69d-4773-acf7-eb53598c2482",
+      "name": "salva sessionId em um fild"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 660,
+        "width": 1216,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -16,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "5f2bd905-1993-4ab0-8c9e-2bc56b25447d",
+      "name": "Sticky Note32"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "session_id": "={{ $node[\"salva sessionId em um fild\"].json[\"sessionId\"] }}",
+            "message": "={\n  \"type\":\"ai\",\n  \"content\": \"{{ $node[\"Envia mensagem de Order Bump\"].json[\"message\"][\"conversation\"].replace(/\\n/g, ' ').replace(/\"/g, '').replace(/\"/g, '') }}\",\n  \"tool_calls\":[],\n  \"additional_kwargs\":{},\n  \"response_metadata\":{},\n  \"invalid_tool_calls\":[]\n}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1632,
+        272
+      ],
+      "id": "9ff5bfed-11f2-4865-940f-90e5ceed9a69",
+      "name": "Salva mensagem IA",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://evolution.plantie.com.br/chat/whatsappNumbers/Atendimento",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "9C3CA760CA29-4246-9084-0418B5B53C2B"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"numbers\": [\"{{ $node[\"Variaçoes de numeros\"].json[\"numbers\"][\"3\"] }}\"]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        544,
+        432
+      ],
+      "id": "988e14b5-10b8-4fa6-9e0e-2c79de9d5109",
+      "name": "Verificar numero"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 244,
+        "width": 160,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        512,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "2a77fbf8-94d4-4547-9af4-41c076299016",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4a1ae5c5-cfe1-4fb5-b1d6-93931482b1d6",
+              "name": "email",
+              "value": "={{ $json.body.contact_email }}",
+              "type": "string"
+            },
+            {
+              "id": "188352cd-7014-4d28-96ff-5449902a2540",
+              "name": "phone",
+              "value": "={{ $json.body.contact_phone }}",
+              "type": "string"
+            },
+            {
+              "id": "d262583f-75a7-45d4-be90-55d623385ba1",
+              "name": "session_id",
+              "value": "={{ $json.body.id }}",
+              "type": "number"
+            },
+            {
+              "id": "ff662666-6063-4800-af53-5a51af7e9914",
+              "name": "created_at",
+              "value": "={{ $json.body.created_at.toDateTime().format('yyyy-MM-dd HH:mm:ss') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -432,
+        288
+      ],
+      "id": "fed17766-1aef-4b36-aa7d-838243b9963e",
+      "name": "Tratamento de dados"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Se você processa apenas um item:\nconst chatId = $input.first().json.body.contact_phone\nconst onlyDigits = chatId.split(\"@\")[0].replace(/\\D/g, \"\");\nlet raw = onlyDigits.startsWith(\"55\") ? onlyDigits : `55${onlyDigits}`;\n\n  \nif (raw.length < 12) {\n  return [{ json: { numbers: [chatId] } }];\n}\n\nconst codPais = raw.slice(0, 2);\nconst ddd     = raw.slice(2, 4);\nconst resto   = raw.slice(4);\n\nlet numeroSem9, numeroCom9;\nif (resto.length === 8) {\n  numeroSem9 = `${codPais}${ddd}${resto}`;\n  numeroCom9 = `${codPais}${ddd}9${resto}`;\n} else if (resto.length === 9 && resto[0] === \"9\") {\n  numeroCom9 = `${codPais}${ddd}${resto}`;\n  numeroSem9 = `${codPais}${ddd}${resto.slice(1)}`;\n} else {\n  numeroSem9 = raw;\n  numeroCom9 = raw.length === 13 ? raw : `${codPais}${ddd}9${resto}`;\n}\n\nreturn [{\n  json: {\n    numbers: [\n      `${numeroCom9}@s.whatsapp.net`,\n      `${numeroSem9}@s.whatsapp.net`,\n      numeroCom9,\n      numeroSem9,\n      numeroCom9.slice(2),\n      numeroSem9.slice(2),\n    ],\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        288
+      ],
+      "id": "b006a325-e3b4-4450-bdbc-26e1d67cd686",
+      "name": "Variaçoes de numeros"
+    },
+    {
+      "parameters": {
+        "content": "## Conexao com chatwoot",
+        "height": 368,
+        "width": 1216,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -16,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "2cca1375-63f5-4c44-bfd4-c7e7d1fe55f2",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1f2c6696-a432-4940-8179-49263aaf7f27",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        288
+      ],
+      "id": "e0b48675-6629-43a2-a335-777cee31e0e5",
+      "name": "FLUXO VENDA NUVEMSHOP",
+      "webhookId": "1f2c6696-a432-4940-8179-49263aaf7f27"
+    }
+  ],
+  "connections": {
+    "Envia mensagem de Order Bump": {
+      "main": [
+        [
+          {
+            "node": "Salva dados banco order bump",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva dados banco order bump": {
+      "main": [
+        [
+          {
+            "node": "Salva mensagem IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca dados do usuario chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Busca a conversas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca a conversas": {
+      "main": [
+        [
+          {
+            "node": "Filtra pela conversa do Atendimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtra pela conversa do Atendimento": {
+      "main": [
+        [
+          {
+            "node": "Adiciona a Tag",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adiciona a Tag": {
+      "main": [
+        [
+          {
+            "node": "Enviar mensagem para Leo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Busca dados do usuario chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensagem para Leo": {
+      "main": [
+        []
+      ]
+    },
+    "Execution Data": {
+      "main": [
+        [
+          {
+            "node": "Tratamento de dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guarda Session Id": {
+      "main": [
+        [
+          {
+            "node": "salva sessionId em um fild",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Guarda Session Id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gerar sessionID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar sessionID": {
+      "main": [
+        [
+          {
+            "node": "Verificar numero",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca sessão no banco": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "salva o session id no banco": {
+      "main": [
+        [
+          {
+            "node": "salva sessionId em um fild",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "salva sessionId em um fild": {
+      "main": [
+        [
+          {
+            "node": "Envia mensagem de Order Bump",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar numero": {
+      "main": [
+        [
+          {
+            "node": "salva o session id no banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tratamento de dados": {
+      "main": [
+        []
+      ]
+    },
+    "Variaçoes de numeros": {
+      "main": [
+        [
+          {
+            "node": "busca sessão no banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FLUXO VENDA NUVEMSHOP": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "FLUXO VENDA NUVEMSHOP": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "user-agent": "axios/1.8.3",
+            "content-length": "8192",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "n8n_webhook:5678",
+            "connection": "close"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "id": 1757059510,
+            "token": "8ee0d6d26d4f01c1ff85e145b03e71d77672afb1",
+            "store_id": "2155771",
+            "contact_email": "zabalapistoresi@yahoo.com",
+            "contact_name": "Plinio Pistoresi",
+            "contact_phone": "+5511992672359",
+            "contact_identification": "26037996814",
+            "shipping_min_days": 5,
+            "shipping_max_days": 5,
+            "billing_name": "Plinio",
+            "billing_phone": "+5511992672359",
+            "billing_address": "Rua Nova York",
+            "billing_number": "854",
+            "billing_floor": "Apartamento 92",
+            "billing_locality": "Brooklin Paulista",
+            "billing_zipcode": "04560002",
+            "billing_city": "São Paulo",
+            "billing_province": "São Paulo",
+            "billing_country": "BR",
+            "billing_customer_type": null,
+            "billing_business_name": null,
+            "billing_trade_name": null,
+            "billing_state_registration": null,
+            "billing_fiscal_regime": null,
+            "billing_business_activity": null,
+            "billing_invoice_use": null,
+            "billing_document_type": null,
+            "shipping_cost_owner": "15.35",
+            "shipping_cost_customer": "15.35",
+            "coupon": [
+              {
+                "id": 24001258,
+                "code": "CARBONE",
+                "type": "percentage",
+                "value": "10.00",
+                "valid": true,
+                "used": 64,
+                "max_uses": null,
+                "includes_shipping": false,
+                "start_date": null,
+                "start_time": null,
+                "end_date": null,
+                "end_time": null,
+                "min_price": null,
+                "categories": null,
+                "products": null,
+                "first_consumer_purchase": false,
+                "max_uses_per_client": null,
+                "is_deleted": false,
+                "combines_with_other_discounts": true
+              }
+            ],
+            "promotional_discount": {
+              "id": null,
+              "store_id": 2155771,
+              "order_id": "1757059510",
+              "created_at": "2025-08-19T16:08:02+00:00",
+              "total_discount_amount": "0.00",
+              "contents": [],
+              "promotions_applied": []
+            },
+            "subtotal": "327.00",
+            "discount": "32.70",
+            "discount_coupon": "32.70",
+            "discount_gateway": "0.00",
+            "total": "309.65",
+            "total_usd": "55.61",
+            "checkout_enabled": true,
+            "weight": "0.450",
+            "currency": "BRL",
+            "language": "pt",
+            "gateway": "nuvem-pago",
+            "gateway_id": "4038302565",
+            "gateway_name": "Nuvem Pago",
+            "shipping": "api_3231365",
+            "shipping_option": "Total Express - Standard",
+            "shipping_option_code": "EXP2022Digibee",
+            "shipping_option_reference": null,
+            "shipping_pickup_details": null,
+            "shipping_tracking_number": "TXAS649182763tx",
+            "shipping_tracking_url": "https://totalconecta.totalexpress.com.br/rastreamento/?codigo=TXAS649182763tx",
+            "shipping_store_branch_name": null,
+            "shipping_store_branch_extra": null,
+            "shipping_pickup_type": "ship",
+            "shipping_suboption": [],
+            "extra": {},
+            "storefront": "mobile",
+            "note": "",
+            "created_at": "2025-07-28T14:53:50+0000",
+            "updated_at": "2025-08-04T12:21:05+0000",
+            "completed_at": {
+              "date": "2025-07-28 14:53:50.000000",
+              "timezone_type": 3,
+              "timezone": "UTC"
+            },
+            "next_action": "close",
+            "payment_details": {
+              "method": "credit_card",
+              "credit_card_company": "mastercard",
+              "installments": "3"
+            },
+            "attributes": [],
+            "free_shipping_config": null,
+            "payment_count": 1,
+            "payment_status": "paid",
+            "order_origin": null,
+            "same_billing_and_shipping_address": true,
+            "total_paid": "309.65",
+            "customer": {
+              "id": 223082940,
+              "name": "Plinio Pistoresi",
+              "email": "zabalapistoresi@yahoo.com",
+              "identification": "26037996814",
+              "phone": "+5511992672359",
+              "note": null,
+              "default_address": {
+                "address": "Rua Nova York",
+                "city": "São Paulo",
+                "country": "BR",
+                "created_at": "2025-07-28T14:53:50+0000",
+                "default": true,
+                "floor": "Apartamento 92",
+                "id": 178616057,
+                "locality": "Brooklin Paulista",
+                "name": "Plinio Pistoresi",
+                "number": "854",
+                "phone": "+5511992672359",
+                "province": "São Paulo",
+                "updated_at": "2025-07-28T14:53:50+0000",
+                "zipcode": "04560002"
+              },
+              "addresses": [
+                {
+                  "address": "Rua Nova York",
+                  "city": "São Paulo",
+                  "country": "BR",
+                  "created_at": "2025-07-28T14:53:50+0000",
+                  "default": true,
+                  "floor": "Apartamento 92",
+                  "id": 178616057,
+                  "locality": "Brooklin Paulista",
+                  "name": "Plinio Pistoresi",
+                  "number": "854",
+                  "phone": "+5511992672359",
+                  "province": "São Paulo",
+                  "updated_at": "2025-07-28T14:53:50+0000",
+                  "zipcode": "04560002"
+                }
+              ],
+              "billing_name": "Plinio",
+              "billing_phone": "+5511992672359",
+              "billing_address": "Rua Nova York",
+              "billing_number": "854",
+              "billing_floor": "Apartamento 92",
+              "billing_locality": "Brooklin Paulista",
+              "billing_zipcode": "04560002",
+              "billing_city": "São Paulo",
+              "billing_province": "São Paulo",
+              "billing_country": "BR",
+              "extra": {},
+              "total_spent": "309.65",
+              "total_spent_currency": "BRL",
+              "last_order_id": 1757059510,
+              "active": false,
+              "first_interaction": "2025-07-28T14:53:50+0000",
+              "created_at": "2025-07-28T14:53:50+0000",
+              "updated_at": "2025-07-28T14:53:50+0000",
+              "customer_type": "",
+              "business_name": "",
+              "trade_name": "",
+              "state_registration": "",
+              "fiscal_regime": "",
+              "invoice_use": "",
+              "document_type": "",
+              "business_activity": "",
+              "accepts_marketing": false,
+              "accepts_marketing_updated_at": "2025-07-28T14:49:43+0000"
+            },
+            "products": [
+              {
+                "id": 2571396064,
+                "depth": "6.00",
+                "height": "26.00",
+                "name": "Regata Dry Fit Kupaa Masculina INK (P)",
+                "name_without_variants": "Regata Dry Fit Kupaa Masculina INK",
+                "price": "109.00",
+                "compare_at_price": "109.00",
+                "product_id": 190657295,
+                "image": {
+                  "id": 930697638,
+                  "product_id": 190657295,
+                  "src": "https://acdn-us.mitiendanube.com/stores/002/155/771/products/2-6e6268f1e456e8c08a17526900220010-1024-1024.png",
+                  "position": 2,
+                  "alt": [],
+                  "height": 3462,
+                  "width": 2770,
+                  "thumbnails_generated": 2,
+                  "created_at": "2025-07-16T18:20:22+0000",
+                  "updated_at": "2025-07-16T18:21:39+0000"
+                },
+                "quantity": "1",
+                "free_shipping": false,
+                "weight": "0.150",
+                "width": "24.00",
+                "variant_id": "765885997",
+                "variant_values": [
+                  "P"
+                ],
+                "properties": [],
+                "sku": "183-INK-P",
+                "barcode": "7795409334803",
+                "has_promotional_price": false,
+                "cost": "24.68"
+              },
+              {
+                "id": 2571388804,
+                "depth": "6.00",
+                "height": "26.00",
+                "name": "Regata Dry Fit Kupaa Masculina NEON (P)",
+                "name_without_variants": "Regata Dry Fit Kupaa Masculina NEON",
+                "price": "109.00",
+                "compare_at_price": "109.00",
+                "product_id": 220040794,
+                "image": {
+                  "id": 930698454,
+                  "product_id": 220040794,
+                  "src": "https://acdn-us.mitiendanube.com/stores/002/155/771/products/6-f9581a28a63d87d84d17526900687039-1024-1024.png",
+                  "position": 2,
+                  "alt": [],
+                  "height": 3462,
+                  "width": 2770,
+                  "thumbnails_generated": 2,
+                  "created_at": "2025-07-16T18:21:09+0000",
+                  "updated_at": "2025-07-16T18:22:03+0000"
+                },
+                "quantity": "1",
+                "free_shipping": false,
+                "weight": "0.150",
+                "width": "24.00",
+                "variant_id": "966969392",
+                "variant_values": [
+                  "P"
+                ],
+                "properties": [],
+                "sku": "183-NEON-P",
+                "barcode": "7795409354771",
+                "has_promotional_price": false,
+                "cost": "24.68"
+              },
+              {
+                "id": 2571389986,
+                "depth": "6.00",
+                "height": "26.00",
+                "name": "Regata Dry Fit Kupaa Masculina CRAZY (P, Branco)",
+                "name_without_variants": "Regata Dry Fit Kupaa Masculina CRAZY",
+                "price": "109.00",
+                "compare_at_price": "109.00",
+                "product_id": 277685831,
+                "image": {
+                  "id": 930702111,
+                  "product_id": 277685831,
+                  "src": "https://acdn-us.mitiendanube.com/stores/002/155/771/products/11-6f3547ddcf552d11c917526902537379-1024-1024.png",
+                  "position": 2,
+                  "alt": [],
+                  "height": 3462,
+                  "width": 2770,
+                  "thumbnails_generated": 2,
+                  "created_at": "2025-07-16T18:24:14+0000",
+                  "updated_at": "2025-07-16T18:24:33+0000"
+                },
+                "quantity": "1",
+                "free_shipping": false,
+                "weight": "0.150",
+                "width": "24.00",
+                "variant_id": "1241074446",
+                "variant_values": [
+                  "P",
+                  "Branco"
+                ],
+                "properties": [],
+                "sku": "183-CRAZY-P",
+                "barcode": null,
+                "has_promotional_price": false,
+                "cost": null
+              }
+            ],
+            "customer_visit": {
+              "created_at": "2025-07-28T14:45:03+0000",
+              "landing_page": "https://kupaa.com.br/produtos/regata-dry-fit-kupaa-masculina-neon/?variant=966969392&pf=mc&gad_source=1&gad_campaignid=22708640288&gbraid=0AAAAACmrmr5ZkvUrzD5i6eOHEloqQ0XmN",
+              "utm_parameters": {
+                "utm_campaign": null,
+                "utm_content": null,
+                "utm_medium": null,
+                "utm_source": null,
+                "utm_term": null
+              }
+            },
+            "fulfillments": [
+              "01K18RD48F2G4ZDH31X6RZX22Q"
+            ],
+            "number": 18606,
+            "cancel_reason": null,
+            "owner_note": "Este pedido tem um prazo adicional de entrega de 1 dias.",
+            "cancelled_at": null,
+            "closed_at": null,
+            "read_at": null,
+            "status": "open",
+            "gateway_link": null,
+            "has_shippable_products": true,
+            "shipping_carrier_name": "Total Express",
+            "shipping_address": {
+              "address": "Rua Nova York",
+              "city": "São Paulo",
+              "country": "BR",
+              "created_at": "2025-07-28T14:45:18+0000",
+              "default": false,
+              "floor": "Apartamento 92",
+              "id": 0,
+              "locality": "Brooklin Paulista",
+              "name": "Plinio Pistoresi",
+              "number": "854",
+              "phone": "+5511992672359",
+              "province": "São Paulo",
+              "updated_at": "2025-08-04T12:21:05+0000",
+              "zipcode": "04560002",
+              "customs": null
+            },
+            "shipping_status": "shipped",
+            "shipped_at": "2025-07-30T15:41:21+0000",
+            "paid_at": "2025-07-28T14:53:51+0000",
+            "landing_url": "https://kupaa.com.br/produtos/regata-dry-fit-kupaa-masculina-neon/?variant=966969392&pf=mc&gad_source=1&gad_campaignid=22708640288&gbraid=0AAAAACmrmr5ZkvUrzD5i6eOHEloqQ0XmN",
+            "client_details": {
+              "browser_ip": "191.39.154.8",
+              "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1"
+            },
+            "app_id": null
+          },
+          "webhookUrl": "https://webhook-kupaa.iamanda.com.br/webhook/1f2c6696-a432-4940-8179-49263aaf7f27",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "c99c3562-083f-4278-8fb3-fb90a1a03e76",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-08-19T15:49:12.730Z",
+      "updatedAt": "2025-08-19T15:49:12.730Z",
+      "role": "workflow:owner",
+      "workflowId": "Lnw1CqAf3rCG0zSK",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
