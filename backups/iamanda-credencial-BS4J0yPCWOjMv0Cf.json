@@ -1,0 +1,11 @@
+{
+  "createdAt": "2025-07-27T16:20:06.045Z",
+  "updatedAt": "2025-07-27T16:20:06.044Z",
+  "id": "BS4J0yPCWOjMv0Cf",
+  "name": "Redis account",
+  "data": {
+    "host": "redis"
+  },
+  "type": "redis",
+  "isManaged": false
+}
