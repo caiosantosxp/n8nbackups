@@ -1,0 +1,497 @@
+{
+  "createdAt": "2025-07-28T15:30:25.109Z",
+  "updatedAt": "2025-08-21T23:35:31.855Z",
+  "id": "T9gLUtiUTXiGpBSC",
+  "name": "[ IAmanda ] - Criar Vector Produtos",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Função para decodificar HTML entities (nomeadas e numéricas)\nfunction decodeHtml(html) {\n  const named = {\n    '&nbsp;':       ' ',\n    '&amp;':        '&',\n    '&lt;':         '<',\n    '&gt;':         '>',\n    '&quot;':       '\"',\n    '&apos;':       \"'\",\n    '&rsquo;':      '’',\n    '&lsquo;':      '‘',\n    '&ldquo;':      '“',\n    '&rdquo;':      '”',\n    '&ndash;':      '–',\n    '&mdash;':      '—',\n    '&agrave;':     'à',\n    '&aacute;':     'á',\n    '&acirc;':      'â',\n    '&atilde;':     'ã',\n    '&auml;':       'ä',\n    '&ccedil;':     'ç',\n    '&egrave;':     'è',\n    '&eacute;':     'é',\n    '&ecirc;':      'ê',\n    '&euml;':       'ë',\n    '&igrave;':     'ì',\n    '&iacute;':     'í',\n    '&icirc;':      'î',\n    '&iuml;':       'ï',\n    '&ograve;':     'ò',\n    '&oacute;':     'ó',\n    '&ocirc;':      'ô',\n    '&otilde;':     'õ',\n    '&ouml;':       'ö',\n    '&ugrave;':     'ù',\n    '&uacute;':     'ú',\n    '&ucirc;':      'û',\n    '&uuml;':       'ü'\n    // adicione outras se descobrir mais\n  };\n\n  return html.replace(/&[#A-Za-z0-9]+;/g, ent => {\n    if (named[ent]) return named[ent];\n    if (ent[1] === '#') {\n      const isHex = ent[2].toLowerCase() === 'x';\n      const code = isHex\n        ? parseInt(ent.slice(3, -1), 16)\n        : parseInt(ent.slice(2, -1), 10);\n      return String.fromCharCode(code);\n    }\n    return ent;\n  });\n}\n\n// No seu nó Code do n8n:\nreturn items.map(item => {\n  const p = item.json;\n\n  // decodifica/despoja descrição como antes…\n  const rawHtml    = p.description.pt || '';\n  const noTags     = rawHtml.replace(/<[^>]*>/g, '');\n  const descricao  = decodeHtml(noTags).trim();\n\n  // base comum\n  const produto = {\n    product_id:      p.id,\n    titulo:          p.name.pt,\n    descricao:       descricao,\n    link:            p.canonical_url,\n    seo_title:       p.seo_title?.pt || '',\n    seo_description: p.seo_description?.pt || '',\n    categorias:      p.categories.map(c => c.name.pt),\n  };\n\n  // mapeia cada variante, desembalando atributos em chave:valor\n  const variacoes = p.variants.map(v => {\n    const valores = p.attributes.reduce((acc, attr, idx) => {\n      acc[attr.pt] = v.values[idx]?.pt || '';\n      return acc;\n    }, {});\n\n    return {\n    quantidade_estoque:  v.stock,\n    price: v.price,\n      ...valores\n    };\n  });\n\n  // retorna um único item por produto, contendo o array de variações\n  return {\n    ...produto,\n    variacoes\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        1760
+      ],
+      "id": "648029b3-2ef5-423f-b2c4-6a7211971c4f",
+      "name": "Tratamento de dados 1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fd4b2a79-4442-48b5-bc31-6e384bf1c967",
+              "name": "=produto",
+              "value": "=Titulo do Produto : {{ $json.titulo }}\n\nDescrição do Produto: {{ $json.descricao }}\n\nLink do Produto: {{ $json.link }}\n\nVariação e preço: {{ $json.variacoes.toJsonString() }}\n\nCategoria: {{ $json.categorias.toJsonString() }}\n\nSEO Titulo: {{ $json.seo_title }}\n\nSEO Descrição: {{ $json.seo_description }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        1760
+      ],
+      "id": "2556c5d6-659b-4639-9ffc-973f4b9b0fb1",
+      "name": "Converte em texto para ficar mais facil para ia1"
+    },
+    {
+      "parameters": {
+        "url": "https://api.nuvemshop.com.br/v1/2155771/products?published=true",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "per_page",
+              "value": "200"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authentication",
+              "value": "bearer 76f5c7447583731ae8372f75e06bea93ea1a4b9c"
+            },
+            {
+              "name": "User-Agent",
+              "value": "IAmanda (leonardo.serafim25@gmail.com)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        1760
+      ],
+      "id": "37f46ef4-10a1-4f4b-8cf5-ef65b67aeb0c",
+      "name": "Busca produtos1"
+    },
+    {
+      "parameters": {
+        "path": "f31f70ae-1e8d-4113-9a05-834c46d9c8c3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        1968
+      ],
+      "id": "dfc59a44-ee9c-40ee-8b43-6f79b79b8fde",
+      "name": "Webhook1",
+      "webhookId": "f31f70ae-1e8d-4113-9a05-834c46d9c8c3"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -112,
+        1760
+      ],
+      "id": "5f2690ef-11f3-4e31-959f-912fa240e4d9",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        1792
+      ],
+      "id": "5efd1847-5b33-4ced-9c87-0a240d420bee",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2128,
+        1792
+      ],
+      "id": "2f50c6b4-ea7e-41f1-b0eb-c79eae637515",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "5hmrBGh7NouxWl1G",
+          "name": "IAmanda"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.1,
+      "position": [
+        1312,
+        1776
+      ],
+      "id": "d4b8b868-f00c-42ea-ace8-c8345fe1ce9e",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 100000,
+        "chunkOverlap": 10000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        1792
+      ],
+      "id": "45af0cc1-a8cf-4a39-9b24-0769ca1e29eb",
+      "name": "Recursive Character Text Splitter1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        1600
+      ],
+      "id": "90362938-c7b0-45e3-ae80-2944d203ef08",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1120,
+        1760
+      ],
+      "id": "e1879fe5-928f-4724-b55e-b7037e5b5501",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 540,
+        "width": 2520,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        1568
+      ],
+      "typeVersion": 1,
+      "id": "ab62d579-296b-43f3-a821-14402e41466f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# RAG Produtos",
+        "height": 80,
+        "width": 360,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        1584
+      ],
+      "typeVersion": 1,
+      "id": "09340688-f35c-4873-8b28-f46560915930",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_vectors",
+          "mode": "list",
+          "cachedResultName": "n8n_vectors"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        192,
+        1760
+      ],
+      "id": "eef1a1c2-ef68-4933-b759-509fb9912589",
+      "name": "Delete table or rows",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Tratamento de dados 1": {
+      "main": [
+        [
+          {
+            "node": "Converte em texto para ficar mais facil para ia1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca produtos1": {
+      "main": [
+        [
+          {
+            "node": "Tratamento de dados 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Delete table or rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Delete table or rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Converte em texto para ficar mais facil para ia1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete table or rows": {
+      "main": [
+        [
+          {
+            "node": "Busca produtos1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "bEV4hbeNKgIZm4dF"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger1": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "webhook-kupaa.iamanda.com.br",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-BR,pt;q=0.9,en;q=0.8",
+            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX19PFpfncNmq1rcok7KsqTIAGNgGeo6Ttxw%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19evuBAqt6F8yMEELR%2FhUvbsITuZKTzpgQ%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX180UrztwUqBV%2BuDcTPS5Kn3y2AYOddKQyzLY7lZPQgNnxYYcYJGPVVB8RW6Lbxy7Gami84%2Bq7U9fw%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX18yXhu4OVCsnP27DcUzlYi14XiZtqwVUEnKoRJs1iD2XXDQUDh4X9HqqqorVO48T8nDPg9n2TfxdKRzJe5woej3bfK1knDx2cuqAhz8STyYrOmshlSKNW6zipOPAGPAduUZTa1Al6cYENKRCe7NBOVxbF1Xk%2FF4NSU%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2BbUmRnQg%2BrKuShu3FbFWDLByOCZgObUsNv6E2TTmDzL39o0AuBPSUzBodCURBeH7Ise%2Br8ozUcPbIx7LTt4CtakrTmvmiAUjAnYdkUZL6NMUrEowJULEA%2BZt9BVs0U61gGlrhnueZCUg%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%22c04fd3e573fb281d4e757750b506914abd65d06bbb5314b7125fdaa366aa0df8%23cd98e3c3-d971-4fb6-91bf-c4c277ee45b7%22%2C%22%24sesid%22%3A%5B1754338301766%2C%22019876b2-2576-7c0c-bb81-ed4d5df1f781%22%2C1754338043252%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fapp-mastercargo.iamanda.com.br%2Fsignin%3Fredirect%3D%25252F%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX18siSxqpF5pxj%2FhYfs2w%2B9keV%2FDUEiQq3SefcGQJVDUI14glZeVksttsazGjirU6qnOYufhzEXgblNLxmXH7WsM%2Bbd4h%2BpxE14dYyvgc8UJwdL0I0J5Jzr9ZW1xqwbkbNkCiVLywJ5BLA%3D%3D",
+            "if-none-match": "W/\"22-6OS7cK0FzqnV2NeDHdOSGS1bVUs\"",
+            "priority": "u=0, i",
+            "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "none",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
+            "x-forwarded-for": "179.222.238.164",
+            "x-forwarded-host": "webhook-kupaa.iamanda.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "53854a3c7008",
+            "x-real-ip": "179.222.238.164"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://webhook-kupaa.iamanda.com.br/webhook/f31f70ae-1e8d-4113-9a05-834c46d9c8c3",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Schedule Trigger1": [
+      {
+        "json": {
+          "timestamp": "2025-08-21T00:00:24.032-03:00",
+          "Readable date": "August 21st 2025, 12:00:24 am",
+          "Readable time": "12:00:24 am",
+          "Day of week": "Thursday",
+          "Year": "2025",
+          "Month": "August",
+          "Day of month": "21",
+          "Hour": "00",
+          "Minute": "00",
+          "Second": "24",
+          "Timezone": "America/Sao_Paulo (UTC-03:00)"
+        }
+      }
+    ]
+  },
+  "versionId": "eb57bb11-fef3-4da5-98bf-09ee25f89e77",
+  "triggerCount": 2,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-07-28T15:30:25.109Z",
+      "updatedAt": "2025-07-28T15:30:25.109Z",
+      "role": "workflow:owner",
+      "workflowId": "T9gLUtiUTXiGpBSC",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
