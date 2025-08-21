@@ -1,0 +1,1014 @@
+{
+  "createdAt": "2025-07-31T17:07:24.541Z",
+  "updatedAt": "2025-08-20T20:23:57.259Z",
+  "id": "aPTBWNKahzyIhMhV",
+  "name": "[ IAmanda ] - Carrinho abandonado - part3",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "session_id",
+              "value": "={{ $json[\"session_id\"].trim() }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "id",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        832,
+        -64
+      ],
+      "id": "a6cc138b-f7d2-481f-a347-9c4129a3852d",
+      "name": "Lista o historico de conversa1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7ba03471-d920-44ce-aaee-21a4d05f3c27",
+              "leftValue": "={{ $json.block }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        -128
+      ],
+      "id": "d7a225c3-c964-450e-9b9b-be986b7d0922",
+      "name": "Verifica se tem block"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        160,
+        -144
+      ],
+      "id": "311e1a0d-5946-4b73-bc72-435da1215fc7",
+      "name": "Para cada item"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "session_id",
+              "value": "={{ $json.session_id.trim() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        368,
+        -128
+      ],
+      "id": "d6788984-539e-4fd6-a841-2e73b9d8a02a",
+      "name": "Busca Sessão",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  a.tempo_envio_carrinho_3,\n  a.terceira_mensagem,\n  e.url,\n  e.\"apiKey\",\n  e.instancia-- cuidado: isso inclui url e apiKey de novo; prefira listar explicitamente o que quer\nFROM ai_agents a\nJOIN \"Evolution\" e ON a.instancia = e.id\nWHERE a.id = $1;",
+        "options": {
+          "queryReplacement": "1"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -272,
+        -144
+      ],
+      "id": "7bade1aa-0808-4033-8a7c-8c7479d3c557",
+      "name": "Dados da IA1",
+      "notesInFlow": true,
+      "credentials": {
+        "postgres": {
+          "id": "Bi4m5JYnBg5yLJsa",
+          "name": "CENTRAL"
+        }
+      },
+      "notes": "Query de busca"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */15 8-21 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        -144
+      ],
+      "id": "efb49743-24c7-4837-b892-71cb907f69e9",
+      "name": "Cada 15 minutos1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e358aee0-c38f-413b-84d3-dc6db53cdbec",
+              "leftValue": "={{ $node[\"Agrega em um objeto\"].json[\"message\"][0].message.type }}",
+              "rightValue": "system",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1744,
+        48
+      ],
+      "id": "2e5b4e65-6043-4746-b70d-2c8f62640b20",
+      "name": "Verifica se o ultimo follow foi respondido1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        2576,
+        48
+      ],
+      "id": "9a377fc9-9a12-4004-b376-a61f6e9ad85d",
+      "name": "Merge Texto1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini-2025-04-14"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2352,
+        64
+      ],
+      "id": "076e0842-3084-46e4-b9f4-a8c4b5d712fe",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "zHUbI3ImveITnHsV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b861bfd2-24e0-4c7f-af78-140409e0eab5",
+              "leftValue": "={{ $node[\"Soma tempo da ultima mensagem\"].json[\"tempoDecorridoMin\"] }}",
+              "rightValue": "={{ $node[\"Dados da IA1\"].json[\"tempo_envio_carrinho_3\"] }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        -64
+      ],
+      "id": "4fa08453-1990-4ed8-bb47-3e3e6781c85f",
+      "name": "Verifica se ja tem o tempo para enviar a mensagem"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "message",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -64
+      ],
+      "id": "5b20a83a-4c4a-45d6-9b9a-dfd30b283a57",
+      "name": "Agrega em um objeto"
+    },
+    {
+      "parameters": {
+        "jsCode": "const messages = $input.first().json.message\n\nconst novaData = new Date()\nconst horaAtual = new Date(novaData.getTime() - 3 * 60 * 60 * 1000)\n\nconst conversation = messages\n  .filter(m => m?.message?.content !== null && m?.message?.content !== undefined)\n  .map((message) => {\n    const originalDate = new Date(message.created_at)\n    const adjustedDate = new Date(originalDate.getTime() - 3 * 60 * 60 * 1000) // ajuste horário\n\n    return {\n      type: message.message.type,\n      content: message.message.content,\n      time: adjustedDate.toISOString()\n    }\n  })\n\nconversation.reverse()\n\n// Última mensagem\nconst ultimaMensagem = conversation[conversation.length - 1]\nconst horaUltimaMensagem = new Date(ultimaMensagem.time)\n\n// Cálculo do tempo decorrido\nconst tempoDecorridoMs = horaAtual - horaUltimaMensagem\nconst tempoDecorridoMin = Math.floor(tempoDecorridoMs / 60000)\n\nreturn {\n  tempoDecorridoMin\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        -64
+      ],
+      "id": "eafa62ab-23a9-438c-b7af-0c6f1f6aae66",
+      "name": "Soma tempo da ultima mensagem"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $node[\"Agrega em um objeto\"].json[\"message\"] }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Chat, você vai receber o histórico de mensagens do cliente. Com base nesse histórico, crie uma mensagem de recuperação de carrinho personalizada e relevante, conectada ao contexto da conversa.\n\nO objetivo é convencer o cliente a finalizar a compra de forma natural e alinhada com o tom anterior.\n\nExemplo de mensagens que iramos mandar caso o cliente não tivesse respondido:\n\n\"{{ $node[\"Dados da IA1\"].json[\"terceira_mensagem\"] }}\"\n\nInstruções importantes:\n- Use o histórico para manter coerência com o que já foi conversado.\n- Foque em criar uma mensagem que converta, mas sem prometer ofertas exageradas ou irreais.\n- Mantenha um tom amigável e de confiança.\n- Proponha apenas condições viáveis (exemplo: cupom de desconto ou brinde, garantia extra).\n- NÃO invente promoções ou condições que não existem.\n- Formate a mensagem para ser enviada no whatsapp\n- Quebre linhas e deixe a mensagem mais humana\n\nO resultado deve ser uma mensagem curta, persuasiva e conectada ao contexto anterior para estimular a finalização da compra.\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        2064,
+        144
+      ],
+      "id": "e77d4b22-14a6-4e8f-83aa-3102cae8f78c",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node[\"Dados da IA1\"].json[\"url\"] }}/message/sendText/{{ $node[\"Dados da IA1\"].json[\"instancia\"] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "={{ $node[\"Dados da IA1\"].json[\"apiKey\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Para cada item\"].json[\"number\"] }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2784,
+        48
+      ],
+      "id": "67dca7e6-8a66-4d11-a1be-86943f532644",
+      "name": "Envia mensagem",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "session_id": "={{ $node[\"Para cada item\"].json[\"session_id\"].trim() }}",
+            "message": "={\n  \"type\": \"ai\",\n  \"content\": \"{{ $node[\"Merge Texto1\"].json[\"text\"].replace(/\\n/g, ' ').replace(/\"/g, '').replace(/\"/g, '') }}\",\n  \"tool_calls\": [],\n  \"additional_kwargs\": {\n    \"tipo\": [\"recuperacao_carrinho\", \"mensagem_para_quebrar_o_gelo\"]\n  }\n}\n"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3008,
+        48
+      ],
+      "id": "0b7d7454-3008-4a41-92be-206da7a70f78",
+      "name": "Salva no char historie",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $node[\"Agrega em um objeto\"].json[\"message\"] }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Escolhar umas das variações da mensagens abaixo e apenas retorne ela, sem explicar sem nada:\n\n{{ $node[\"Dados da IA1\"].json[\"terceira_mensagem\"] }}\n\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        2064,
+        -64
+      ],
+      "id": "83adb751-0f54-485d-bdc9-5d6a46f97b61",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT fl.*\nFROM tb_follow AS fl\nWHERE fl.follow_count = 2\n  AND NOT EXISTS (\n    SELECT 1\n    FROM tb_compradores AS c\n    WHERE c.session_cart = fl.session_cart\n  );\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -80,
+        -144
+      ],
+      "id": "509ff16d-0213-47c8-b7db-4ab3ffe687eb",
+      "name": "Buscar follows",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $now }}",
+            "session_id": "={{ $json.session_id }}",
+            "message": "={\"type\":\"system\",\"content\":\"⚠️ Este cliente recebeu a terceira mensagem de recuperação de carrinho e foi enviando um texto para tentar quebra o gelo e fazer o cliente responder.\",\"additional_kwargs\":{\"tipo\": \"recuperacao_carrinho\"},\"response_metadata\":{}}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3248,
+        48
+      ],
+      "id": "138d3017-199c-4e97-b06e-c04378ca42b1",
+      "name": "Salva mensagem System",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tb_follow",
+          "mode": "list",
+          "cachedResultName": "tb_follow"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "follow_count": "=3",
+            "id": "={{ $node[\"Para cada item\"].json[\"id\"] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_messagem",
+              "displayName": "last_messagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "follow_count",
+              "displayName": "follow_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session",
+              "displayName": "session",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "block",
+              "displayName": "block",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3472,
+        48
+      ],
+      "id": "2e4a388f-d0e5-4f24-aa02-9e43262a48ea",
+      "name": "Inseri no TB follow",
+      "credentials": {
+        "postgres": {
+          "id": "7hVSNHLK8ZyeDUth",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Lista o historico de conversa1": {
+      "main": [
+        [
+          {
+            "node": "Agrega em um objeto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se tem block": {
+      "main": [
+        [
+          {
+            "node": "Lista o historico de conversa1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Para cada item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Para cada item": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Busca Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca Sessão": {
+      "main": [
+        [
+          {
+            "node": "Verifica se tem block",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados da IA1": {
+      "main": [
+        [
+          {
+            "node": "Buscar follows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cada 15 minutos1": {
+      "main": [
+        [
+          {
+            "node": "Dados da IA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se o ultimo follow foi respondido1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Texto1": {
+      "main": [
+        [
+          {
+            "node": "Envia mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se ja tem o tempo para enviar a mensagem": {
+      "main": [
+        [
+          {
+            "node": "Verifica se o ultimo follow foi respondido1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Para cada item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrega em um objeto": {
+      "main": [
+        [
+          {
+            "node": "Soma tempo da ultima mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Soma tempo da ultima mensagem": {
+      "main": [
+        [
+          {
+            "node": "Verifica se ja tem o tempo para enviar a mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Merge Texto1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Envia mensagem": {
+      "main": [
+        [
+          {
+            "node": "Salva no char historie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva no char historie": {
+      "main": [
+        [
+          {
+            "node": "Salva mensagem System",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Merge Texto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar follows": {
+      "main": [
+        [
+          {
+            "node": "Para cada item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva mensagem System": {
+      "main": [
+        [
+          {
+            "node": "Inseri no TB follow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inseri no TB follow": {
+      "main": [
+        [
+          {
+            "node": "Para cada item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "bEV4hbeNKgIZm4dF"
+  },
+  "staticData": {
+    "node:Cada 15 minutos1": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Cada 15 minutos1": [
+      {
+        "json": {
+          "timestamp": "2025-07-11T16:45:00.021-03:00",
+          "Readable date": "July 11th 2025, 4:45:00 pm",
+          "Readable time": "4:45:00 pm",
+          "Day of week": "Friday",
+          "Year": "2025",
+          "Month": "July",
+          "Day of month": "11",
+          "Hour": "16",
+          "Minute": "45",
+          "Second": "00",
+          "Timezone": "America/Sao_Paulo (UTC-03:00)"
+        }
+      }
+    ]
+  },
+  "versionId": "3f7c1ff5-e727-4189-9655-ff4243abdcd2",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-07-31T17:07:24.541Z",
+      "updatedAt": "2025-07-31T17:07:24.541Z",
+      "role": "workflow:owner",
+      "workflowId": "aPTBWNKahzyIhMhV",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
