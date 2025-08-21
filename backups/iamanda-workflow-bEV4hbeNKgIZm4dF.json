@@ -1,0 +1,147 @@
+{
+  "createdAt": "2025-08-15T15:03:35.874Z",
+  "updatedAt": "2025-08-19T15:03:33.483Z",
+  "id": "bEV4hbeNKgIZm4dF",
+  "name": "ERRO - KUPAA",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "867cc675-f457-4d2c-8472-9caf93b0488f",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://app-central.iamanda.com.br/webhook/cac668a5-d6da-4443-851f-2ba740cace58",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "fluxo",
+              "value": "={{ $json.workflow.name }}"
+            },
+            {
+              "name": "id_fluxo",
+              "value": "={{ $json.workflow.id }}"
+            },
+            {
+              "name": "node",
+              "value": "={{ $json.execution.lastNodeExecuted }}"
+            },
+            {
+              "name": "erro",
+              "value": "={{ $json.execution.error.message }}"
+            },
+            {
+              "name": "execution_id",
+              "value": "={{ $json.execution.id }}"
+            },
+            {
+              "name": "url_execution",
+              "value": "={{ $json.execution.url }}"
+            },
+            {
+              "name": "level",
+              "value": "={{ $json.execution.error.level }}"
+            },
+            {
+              "name": "vps",
+              "value": "kupaa"
+            },
+            {
+              "name": "data_hora",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ac4fea7c-23c4-4f17-84bd-6dd8f47b7cb1",
+      "name": "Envia para n8n central"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Envia para n8n central",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Error Trigger": [
+      {
+        "json": {
+          "execution": {
+            "id": "2063705",
+            "url": "https://n8n.plantie.com.br/workflow/THac830tWgxZayfR/executions/2063705",
+            "error": {
+              "level": "warning",
+              "tags": {},
+              "context": {
+                "runIndex": 0,
+                "itemIndex": 1
+              },
+              "functionality": "regular",
+              "name": "ExpressionError",
+              "timestamp": 1755258624077,
+              "message": "No data found for item-index: \"1\"",
+              "stack": "ExpressionError: No data found for item-index: \"1\"\n    at Object.get (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/WorkflowDataProxy.ts:537:14)\n    at Proxy.eval (eval at getFunction (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+tournament@1.0.6/node_modules/@n8n/tournament/src/FunctionEvaluator.ts:13:16), <anonymous>:6:84)\n    at FunctionEvaluator.evaluate (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+tournament@1.0.6/node_modules/@n8n/tournament/src/FunctionEvaluator.ts:20:13)\n    at Tournament.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+tournament@1.0.6/node_modules/@n8n/tournament/src/index.ts:45:25)\n    at evaluateExpression (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/ExpressionEvaluatorProxy.ts:20:9)\n    at Expression.renderExpression (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/Expression.ts:331:29)\n    at Expression.resolveSimpleParameterValue (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-workflow@file+packages+workflow/node_modules/n8n-workflow/src/Expression.ts:310:28)\n    at ExecuteContext.evaluateExpression (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_openai@4.78.1_encoding@0.1.13_zod@3.24.1_/node_modules/n8n-core/src/execution-engine/node-execution-context/node-execution-context.ts:427:35)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_12b981d6b49d407a163f4d5244314033/node_modules/n8n-nodes-base/nodes/Postgres/v2/actions/database/executeQuery.operation.ts:68:43\n    at Array.map (<anonymous>)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_12b981d6b49d407a163f4d5244314033/node_modules/n8n-nodes-base/nodes/Postgres/v2/actions/database/executeQuery.operation.ts:64:4)\n    at ExecuteContext.router (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_12b981d6b49d407a163f4d5244314033/node_modules/n8n-nodes-base/nodes/Postgres/v2/actions/router.ts:40:68)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_12b981d6b49d407a163f4d5244314033/node_modules/n8n-nodes-base/nodes/Postgres/v2/PostgresV2.node.ts:26:10)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_openai@4.78.1_encoding@0.1.13_zod@3.24.1_/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1185:9)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_openai@4.78.1_encoding@0.1.13_zod@3.24.1_/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1534:27\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_openai@4.78.1_encoding@0.1.13_zod@3.24.1_/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2098:11"
+            },
+            "lastNodeExecuted": "Verifica se tem conversa até 2 dias antes da compra3",
+            "mode": "webhook"
+          },
+          "workflow": {
+            "id": "THac830tWgxZayfR",
+            "name": "FLUXO - RELATÓRIO IAMANDA"
+          }
+        }
+      }
+    ]
+  },
+  "versionId": "a32319a7-a4cf-4a5b-8d95-0a2fba70b919",
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-08-15T15:03:35.874Z",
+      "updatedAt": "2025-08-15T15:03:35.874Z",
+      "role": "workflow:owner",
+      "workflowId": "bEV4hbeNKgIZm4dF",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
