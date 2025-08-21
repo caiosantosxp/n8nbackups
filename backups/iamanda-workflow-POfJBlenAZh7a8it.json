@@ -1,0 +1,53 @@
+{
+  "createdAt": "2025-07-30T19:10:23.467Z",
+  "updatedAt": "2025-07-31T17:05:41.221Z",
+  "id": "POfJBlenAZh7a8it",
+  "name": "My workflow",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "ca8d6b42-35a8-4ed2-95ab-2a7d7ab57276",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ea8634ed-d0d3-43f3-9ef8-9aaf924a5340",
+      "name": "Webhook",
+      "webhookId": "ca8d6b42-35a8-4ed2-95ab-2a7d7ab57276"
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "795ce17d-99be-4213-9bf3-0ec909509a40",
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-07-30T19:10:23.467Z",
+      "updatedAt": "2025-07-30T19:10:23.467Z",
+      "role": "workflow:owner",
+      "workflowId": "POfJBlenAZh7a8it",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
