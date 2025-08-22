@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-07-31T17:08:44.177Z",
-  "updatedAt": "2025-08-21T23:59:09.088Z",
+  "updatedAt": "2025-08-22T00:03:06.184Z",
   "id": "iS1fgaFHumQDgHHF",
   "name": "Backup - Workflow",
   "active": false,
@@ -19,7 +19,7 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        1024,
+        1200,
         864
       ],
       "id": "39b146c1-de1c-4bd0-b684-e55448d65de6",
@@ -32,7 +32,7 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        1648,
+        1824,
         864
       ],
       "id": "522b78bf-efe8-4283-a59c-538d2987ba01",
@@ -46,7 +46,7 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        1888,
+        2064,
         864
       ],
       "id": "ccda0758-9fd1-4e71-8140-d893fff6d5e1",
@@ -60,7 +60,7 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
       "position": [
-        2096,
+        2272,
         864
       ],
       "id": "657be7a1-ab6f-4738-b016-d6b34052bf1e",
@@ -73,7 +73,7 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        2320,
+        2496,
         864
       ],
       "id": "5a1f9195-56fa-4f1f-8ed6-6e83d31c67b6",
@@ -86,8 +86,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2912,
-        1040
+        3392,
+        944
       ],
       "id": "daa79a1a-4900-4db8-9b64-b2d7af21b16e",
       "name": "Code1"
@@ -99,8 +99,8 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        3104,
-        960
+        3632,
+        864
       ],
       "id": "a90d3de3-9fdf-4a2e-bfd8-2038aa9dae70",
       "name": "Wait",
@@ -134,8 +134,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2544,
-        960
+        2960,
+        864
       ],
       "id": "73658200-729e-4d76-b484-ba2a5c13a8c8",
       "name": "If"
@@ -145,8 +145,8 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        2800,
-        720
+        3072,
+        544
       ],
       "id": "3234bc5f-9472-4241-86a8-e5d8095aef0d",
       "name": "No Operation, do nothing"
@@ -158,8 +158,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2752,
-        1040
+        3232,
+        944
       ],
       "id": "630d6309-656f-4fab-9a38-46fdc4a9c50d",
       "name": "Code3"
@@ -171,8 +171,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2816,
-        880
+        3232,
+        752
       ],
       "id": "4528575b-54b9-474f-b4ee-bc46fedf3356",
       "name": "Code4"
@@ -185,7 +185,7 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        1184,
+        1360,
         544
       ],
       "typeVersion": 1,
@@ -197,7 +197,7 @@
       "type": "n8n-nodes-globals.globalConstants",
       "typeVersion": 1,
       "position": [
-        1248,
+        1424,
         864
       ],
       "id": "52256865-de9a-4ad6-8974-79d30b53d4f5",
@@ -250,11 +250,44 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1456,
+        1632,
         864
       ],
       "id": "acc39eae-133e-41ec-9a2b-0c3a772654ae",
       "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1319f8ab-4601-4553-bc1c-420dd6b0b221",
+              "leftValue": "={{ $node[\"Loop Over Items\"].json[\"data\"][\"id\"] }}",
+              "rightValue": "qi0UIpSe5wP89Cyf",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2736,
+        880
+      ],
+      "id": "1433d798-1f19-4407-b6ce-f970b81bf872",
+      "name": "If1"
     }
   ],
   "connections": {
@@ -313,7 +346,7 @@
         ],
         [
           {
-            "node": "If",
+            "node": "If1",
             "type": "main",
             "index": 0
           }
@@ -403,6 +436,24 @@
           }
         ]
       ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -422,7 +473,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "d60244ce-7fa4-4a24-bdc1-e3abb1374701",
+  "versionId": "d9336469-d855-47d8-9ab3-d45cd9631b0c",
   "triggerCount": 1,
   "tags": [],
   "shared": [
