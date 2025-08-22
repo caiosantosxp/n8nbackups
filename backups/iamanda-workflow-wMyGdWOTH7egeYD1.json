@@ -1,0 +1,37 @@
+{
+  "createdAt": "2025-07-30T19:15:53.039Z",
+  "updatedAt": "2025-07-31T17:05:48.131Z",
+  "id": "wMyGdWOTH7egeYD1",
+  "name": "My workflow 2",
+  "active": false,
+  "isArchived": true,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "9df69239-85ce-4511-88f4-0cbe785467eb",
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-07-30T19:15:53.039Z",
+      "updatedAt": "2025-07-30T19:15:53.039Z",
+      "role": "workflow:owner",
+      "workflowId": "wMyGdWOTH7egeYD1",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
