@@ -1,0 +1,12 @@
+{
+  "createdAt": "2025-07-31T19:09:49.454Z",
+  "updatedAt": "2025-07-31T19:10:28.572Z",
+  "id": "zqlZjYaQTYlKZcl0",
+  "name": "n8n account",
+  "data": {
+    "apiKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZDk4ZTNjMy1kOTcxLTRmYjYtOTFiZi1jNGMyNzdlZTQ1YjciLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzUzOTg4OTc2LCJleHAiOjE3NTY1MjI4MDB9.qX_pJ-FzbxbXBgfnZTY3r3m_AQWNGDfCyXKR8FaURik",
+    "baseUrl": "https://app-kupaa.iamanda.com.br"
+  },
+  "type": "n8nApi",
+  "isManaged": false
+}
