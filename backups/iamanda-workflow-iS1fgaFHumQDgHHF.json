@@ -1,9 +1,9 @@
 {
   "createdAt": "2025-07-31T17:08:44.177Z",
-  "updatedAt": "2025-08-22T00:03:06.184Z",
+  "updatedAt": "2025-08-22T21:56:54.902Z",
   "id": "iS1fgaFHumQDgHHF",
   "name": "Backup - Workflow",
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -27,7 +27,7 @@
     },
     {
       "parameters": {
-        "command": "rm -r repo\n\nnpx n8n export:workflow --backup --output repo/backups/\nnpx n8n export:credentials --backup --output repo/backups/"
+        "command": "rm -r repo\n\nnpx n8n export:workflow --backup --output repo/backups/"
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -81,25 +81,12 @@
     },
     {
       "parameters": {
-        "jsCode": "const axios = require('axios');\n\nconst dados = $json[\"data\"]\n// === CONFIGURAÇÃO ===\n// ⚠️ Use variável de ambiente no n8n. Rotacione esse token que está em claro.\nconst githubToken = $node[\"Edit Fields\"].json[\"constants\"][\"TOKEN_GITHUB\"]\nif (!githubToken) {\n  throw new Error('Token do GitHub não definido. Configure a variável de ambiente GITHUB_TOKEN.');\n}\n\nconst owner = $node[\"Edit Fields\"].json[\"constants\"][\"OWNER\"]\nconst repo = $node[\"Edit Fields\"].json[\"constants\"][\"REPO\"]\nconst branch = $node[\"Edit Fields\"].json[\"constants\"][\"BRANCH\"]\n\n// === Utils ===\nfunction encodePathSegments(p) {\n  return p.split('/').map(encodeURIComponent).join('/');\n}\n\n// === Dados de entrada ===\nconst workflowData = (typeof dados !== 'undefined' && dados) ? dados : $input.first().json;\nconst today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD\n\n// monta nome de arquivo: usa id se tiver, senão data\nconst identifier = workflowData.id ? workflowData.id : today;\nconst pathInRepo = `backups/iamanda-credencial-${identifier}.json`;\nconst apiBase = `https://api.github.com/repos/${owner}/${repo}/contents/${encodePathSegments(pathInRepo)}`;\nconst commitMessage = `Backup automático do workflow IAmanda em ${today}`;\n\n// prepara conteúdo\nconst fileContentStr = JSON.stringify(workflowData, null, 2);\nconst contentBase64 = Buffer.from(fileContentStr, 'utf8').toString('base64');\n\n// ==== helper: cria bypass de Push Protection ====\nasync function createPushProtectionBypass(placeholderId, reason = 'will_fix_later') {\n  const url = `https://api.github.com/repos/${owner}/${repo}/secret-scanning/push-protection-bypasses`;\n  const resp = await axios.post(url, { reason, placeholder_id: placeholderId }, {\n    headers: {\n      Authorization: `Bearer ${githubToken}`,\n      'User-Agent': 'n8n-backup-script',\n      Accept: 'application/vnd.github+json',\n      'X-GitHub-Api-Version': '2022-11-28',\n    },\n    validateStatus: (s) => s >= 200 && s < 300,\n  });\n  return resp.data;\n}\n\nasync function run() {\n  // 1) Verifica existência (pega sha se existir)\n  let sha;\n  try {\n    const getResp = await axios.get(apiBase, {\n      params: { ref: branch },\n      headers: {\n        Authorization: `Bearer ${githubToken}`,\n        'User-Agent': 'n8n-backup-script',\n        Accept: 'application/vnd.github+json',\n        'X-GitHub-Api-Version': '2022-11-28',\n      },\n      validateStatus: (s) => s === 200 || s === 404,\n    });\n    if (getResp.status === 200 && getResp.data?.sha) sha = getResp.data.sha;\n  } catch (err) {\n    throw new Error(`Erro ao verificar existência do arquivo no GitHub: ${err.message}`);\n  }\n\n  // 2) Monta payload\n  const body = {\n    message: commitMessage,\n    content: contentBase64,\n    branch,\n    ...(sha ? { sha } : {}),\n  };\n\n  // 3) Tenta criar/atualizar\n  try {\n    const putResp = await axios.put(apiBase, body, {\n      headers: {\n        Authorization: `Bearer ${githubToken}`,\n        'User-Agent': 'n8n-backup-script',\n        Accept: 'application/vnd.github+json',\n        'X-GitHub-Api-Version': '2022-11-28',\n      },\n      validateStatus: (s) => s === 201 || s === 200,\n    });\n\n    const result = putResp.data;\n    return {\n      success: true,\n      created: putResp.status === 201,\n      commit: result.commit?.sha || null,\n      url: result.content?.html_url || null,\n      skipped: false,\n      bypassed: false,\n    };\n  } catch (err) {\n    const status = err.response?.status;\n    const data = err.response?.data;\n\n    // 4) Trata 409 de Push Protection (Secret detected in content)\n    const isPushProtection =\n      status === 409 &&\n      data &&\n      typeof data.message === 'string' &&\n      data.message.toLowerCase().includes('secret detected');\n\n    if (!isPushProtection) {\n      // outro erro → propaga com detalhes\n      throw new Error(`Erro ao criar/atualizar o arquivo no GitHub: ${status} ${JSON.stringify(data)}`);\n    }\n\n    // extrai placeholders\n    const placeholders = data?.metadata?.secret_scanning?.bypass_placeholders || [];\n    if (!Array.isArray(placeholders) || placeholders.length === 0) {\n      throw new Error(`409 (Push Protection) sem bypass_placeholders. Payload: ${JSON.stringify(data)}`);\n    }\n\n    // 5) Solicita BYPASS para cada placeholder retornado\n    for (const ph of placeholders) {\n      const placeholderId = ph?.placeholder_id;\n      if (!placeholderId) continue;\n      try {\n        await createPushProtectionBypass(placeholderId, 'will_fix_later');\n      } catch (e2) {\n        const s2 = e2.response?.status;\n        const d2 = e2.response?.data;\n        throw new Error(`Falha ao solicitar bypass (${placeholderId}): ${s2} ${JSON.stringify(d2)}`);\n      }\n    }\n\n    // 6) Retry do PUT após o bypass\n    try {\n      const retryResp = await axios.put(apiBase, body, {\n        headers: {\n          Authorization: `Bearer ${githubToken}`,\n          'User-Agent': 'n8n-backup-script',\n          Accept: 'application/vnd.github+json',\n          'X-GitHub-Api-Version': '2022-11-28',\n        },\n        validateStatus: (s) => s === 201 || s === 200,\n      });\n\n      const result = retryResp.data;\n      return {\n        success: true,\n        created: retryResp.status === 201,\n        commit: result.commit?.sha || null,\n        url: result.content?.html_url || null,\n        skipped: false,\n        bypassed: true,\n      };\n    } catch (e3) {\n      const s3 = e3.response?.status;\n      const d3 = e3.response?.data;\n      throw new Error(`PUT após bypass falhou: ${s3} ${JSON.stringify(d3)}`);\n    }\n  }\n}\n\nreturn run();\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        3392,
-        944
-      ],
-      "id": "daa79a1a-4900-4db8-9b64-b2d7af21b16e",
-      "name": "Code1"
-    },
-    {
-      "parameters": {
         "amount": 3
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        3632,
+        3168,
         864
       ],
       "id": "a90d3de3-9fdf-4a2e-bfd8-2038aa9dae70",
@@ -107,62 +94,15 @@
       "webhookId": "842b1584-8e02-4c9a-945e-caf2046a849d"
     },
     {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "0b95aa3b-3cb7-41ed-9a10-c0b2fc9c2337",
-              "leftValue": "={{ $json[\"data\"][\"type\"] }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notExists",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        2960,
-        864
-      ],
-      "id": "73658200-729e-4d76-b484-ba2a5c13a8c8",
-      "name": "If"
-    },
-    {
       "parameters": {},
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        3072,
-        544
+        3232,
+        576
       ],
       "id": "3234bc5f-9472-4241-86a8-e5d8095aef0d",
       "name": "No Operation, do nothing"
-    },
-    {
-      "parameters": {
-        "jsCode": "const crypto = require('crypto');\n\n// --- EVP_BytesToKey (MD5) usado pelo OpenSSL \"Salted__\" ---\nfunction evpKDF(password, salt, keyLen, ivLen) {\n  let prev = Buffer.alloc(0);\n  const out = Buffer.alloc(keyLen + ivLen);\n  let generated = 0;\n  while (generated < out.length) {\n    const md5 = crypto.createHash('md5');\n    md5.update(prev);\n    md5.update(password);\n    md5.update(salt);\n    prev = md5.digest();\n    const toCopy = Math.min(prev.length, out.length - generated);\n    prev.copy(out, generated, 0, toCopy);\n    generated += toCopy;\n  }\n  return { key: out.slice(0, keyLen), iv: out.slice(keyLen, keyLen + ivLen) };\n}\n\nfunction decryptOpenSSL(encryptedBase64, passphrase) {\n  const buf = Buffer.from(String(encryptedBase64).trim(), 'base64');\n  if (buf.slice(0, 8).toString() !== 'Salted__') {\n    throw new Error('Cipher inválido: prefixo \"Salted__\" ausente.');\n  }\n  const salt = buf.slice(8, 16);\n  const ciphertext = buf.slice(16);\n  const { key, iv } = evpKDF(Buffer.from(passphrase, 'utf8'), salt, 32, 16);\n  const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);\n  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);\n  return decrypted.toString('utf8');\n}\n\n// ===== execução (um item) =====\nreturn (async () => {\n  const passphrase = $node[\"Edit Fields\"].json[\"constants\"][\"PASSPHRASE\"]\n  if (!passphrase) throw new Error('Defina a env BACKUP_PASSPHRASE no n8n.');\n\n  const input = $json[\"data\"] || {};\n  if (typeof input.data !== 'string' || !input.data.trim()) {\n    throw new Error('Campo \"data\" deve ser uma string base64 cifrada.');\n  }\n\n  const decryptedText = decryptOpenSSL(input.data, passphrase);\n\n  // seu \"data\" é um JSON — parse e substitui\n  let decryptedJson;\n  try {\n    decryptedJson = JSON.parse(decryptedText);\n  } catch (e) {\n    throw new Error('Texto descriptografado não é JSON válido: ' + e.message);\n  }\n\n  const out = { ...input, data: decryptedJson };\n  return { data: out };\n})();\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        3232,
-        944
-      ],
-      "id": "630d6309-656f-4fab-9a38-46fdc4a9c50d",
-      "name": "Code3"
     },
     {
       "parameters": {
@@ -171,8 +111,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3232,
-        752
+        2960,
+        864
       ],
       "id": "4528575b-54b9-474f-b4ee-bc46fedf3356",
       "name": "Code4"
@@ -353,51 +293,11 @@
         ]
       ]
     },
-    "Code1": {
-      "main": [
-        [
-          {
-            "node": "Wait",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Wait": {
       "main": [
         [
           {
             "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If": {
-      "main": [
-        [
-          {
-            "node": "Code4",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Code3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code3": {
-      "main": [
-        [
-          {
-            "node": "Code1",
             "type": "main",
             "index": 0
           }
@@ -441,7 +341,7 @@
       "main": [
         [
           {
-            "node": "If",
+            "node": "Code4",
             "type": "main",
             "index": 0
           }
@@ -473,7 +373,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "d9336469-d855-47d8-9ab3-d45cd9631b0c",
+  "versionId": "13b1a9a0-33b0-442e-a370-0eec2e71eb73",
   "triggerCount": 1,
   "tags": [],
   "shared": [
