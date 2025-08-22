@@ -1,0 +1,381 @@
+{
+  "createdAt": "2025-08-20T18:18:26.780Z",
+  "updatedAt": "2025-08-21T21:11:35.559Z",
+  "id": "rHXVvcnXXGJQgzFf",
+  "name": "[ IAmanda ] - Dispara lista mensagem",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  e.url,\n  e.\"apiKey\",\n  e.instancia-- cuidado: isso inclui url e apiKey de novo; prefira listar explicitamente o que quer\nFROM ai_agents a\nJOIN \"Evolution\" e ON a.instancia = e.id\nWHERE a.id = $1;",
+        "options": {
+          "queryReplacement": "1"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "48d26a05-8650-4644-9784-a99491289f21",
+      "name": "Dados da IA1",
+      "notesInFlow": true,
+      "credentials": {
+        "postgres": {
+          "id": "Bi4m5JYnBg5yLJsa",
+          "name": "CENTRAL"
+        }
+      },
+      "notes": "Query de busca"
+    },
+    {
+      "parameters": {
+        "formTitle": "Dispara Lista de Mensagens",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Modelo de mensagem 1",
+              "fieldType": "textarea",
+              "placeholder": "Digite aqui a mensagem",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Modelo de mensagem 2",
+              "fieldType": "textarea",
+              "placeholder": "Digite aqui a mensagem"
+            },
+            {
+              "fieldLabel": "Modelo de mensagem 3",
+              "fieldType": "textarea",
+              "placeholder": "Digite aqui a mensagem"
+            },
+            {
+              "fieldLabel": "Modelo de mensagem 4",
+              "fieldType": "textarea",
+              "placeholder": "Digite aqui a mensagem"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        0
+      ],
+      "id": "77028848-840a-46e5-b795-dc9d73fa1051",
+      "name": "Recebe modelos de mensagens",
+      "webhookId": "d26079e2-8ca1-45e1-922f-6b970ac66618"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4dc1356a-d857-49e7-b8e9-c56665051c08",
+              "name": "Modelo de mensagem 1",
+              "value": "={{ $json[\"Modelo de mensagem 1\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "1c4e0210-f0e6-4782-ad74-c836b699b63b",
+              "name": "Modelo de mensagem 2",
+              "value": "={{ $json[\"Modelo de mensagem 2\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "7dac1b1b-7a0b-47c2-b872-61421e9e2276",
+              "name": "Modelo de mensagem 3",
+              "value": "={{ $json[\"Modelo de mensagem 3\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "c0578be6-4572-42ae-af06-8f31d10a295b",
+              "name": "Modelo de mensagem 4",
+              "value": "={{ $json[\"Modelo de mensagem 4\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7d799e02-3cbf-4876-8f66-b93548a8e9bb",
+      "name": "Guarda os modelos de mensagens"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "contatos",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        192,
+        0
+      ],
+      "id": "3974b344-ec2b-4c90-a1e1-eac21ab4281c",
+      "name": "Recebe o arquivo",
+      "webhookId": "60aa96f6-5309-4e1a-bc67-cc0852859838"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "=contatos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        384,
+        0
+      ],
+      "id": "8578a500-71a6-44b3-9c5f-93339b882b23",
+      "name": "Extrai numero da lista"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        608,
+        0
+      ],
+      "id": "07d99f26-da91-4f1b-b883-ff930f1ccdf8",
+      "name": "Para cada item da lista"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node[\"Dados da IA1\"].json[\"url\"] }}/message/sendText/{{ $json.instancia }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "={{ $json.apiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Para cada item da lista\"].json[\"Numero\"] }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Escolher entre um modelo da lista e sorte um tempo de 3 a 20 segundos').item.json.mensagem }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        16
+      ],
+      "id": "ab52f06f-4cbf-4701-9a3b-9fd556656343",
+      "name": "Envia a mensagem",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $node[\"Escolher entre um modelo da lista e sorte um tempo de 3 a 20 segundos\"].json[\"tempo\"] }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        0
+      ],
+      "id": "b20b9f73-d9e7-4fc2-a257-dcd051497b95",
+      "name": "Aguarda",
+      "webhookId": "0511d247-65ac-479e-867d-3eaea21f86f5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lê o JSON do node \"Edit Fields\"\nconst origem = $node[\"Guarda os modelos de mensagens\"].json;\n\n// Junta os objetos caso venha um array de objetos\nconst modelosObj = Array.isArray(origem) ? Object.assign({}, ...origem) : origem;\n\n// Pega pares [titulo, texto]\nconst entries = Object.entries(modelosObj);\nif (entries.length === 0) {\n  throw new Error(\"Nenhum modelo encontrado.\");\n}\n\n// Escolhe um modelo aleatório\nconst [titulo, texto] = entries[Math.floor(Math.random() * entries.length)];\n\n// Tempo aleatório (inteiro) entre 3 e 20 segundos\nconst tempo = Math.floor(Math.random() * 18) + 3; // 3..20\n\nreturn [{ json: { mensagem: texto, tempo } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        16
+      ],
+      "id": "509346b6-5e63-4ec5-8541-63a668fb672c",
+      "name": "Escolher entre um modelo da lista e sorte um tempo de 3 a 20 segundos"
+    }
+  ],
+  "connections": {
+    "Dados da IA1": {
+      "main": [
+        [
+          {
+            "node": "Envia a mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recebe modelos de mensagens": {
+      "main": [
+        [
+          {
+            "node": "Guarda os modelos de mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guarda os modelos de mensagens": {
+      "main": [
+        [
+          {
+            "node": "Recebe o arquivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recebe o arquivo": {
+      "main": [
+        [
+          {
+            "node": "Extrai numero da lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrai numero da lista": {
+      "main": [
+        [
+          {
+            "node": "Para cada item da lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Para cada item da lista": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Escolher entre um modelo da lista e sorte um tempo de 3 a 20 segundos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia a mensagem": {
+      "main": [
+        [
+          {
+            "node": "Aguarda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Para cada item da lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aguarda": {
+      "main": [
+        [
+          {
+            "node": "Para cada item da lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escolher entre um modelo da lista e sorte um tempo de 3 a 20 segundos": {
+      "main": [
+        [
+          {
+            "node": "Dados da IA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Recebe modelos de mensagens": [
+      {
+        "json": {
+          "Modelo de mensagem 1": "teste modelo 1",
+          "Modelo de mensagem 2": "teste modelo 2",
+          "Modelo de mensagem 3": "teste modelo 3",
+          "Modelo de mensagem 4": "teste modelo 4",
+          "submittedAt": "2025-08-21T18:00:46.089-03:00",
+          "formMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "fe998822-5d1b-4d2a-bd08-dba3ad20e147",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-08-20T18:18:26.780Z",
+      "updatedAt": "2025-08-20T18:18:26.780Z",
+      "role": "workflow:owner",
+      "workflowId": "rHXVvcnXXGJQgzFf",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
