@@ -1,0 +1,83 @@
+{
+  "createdAt": "2025-08-15T14:46:57.336Z",
+  "updatedAt": "2025-08-19T15:03:36.029Z",
+  "id": "ku2XLWhYwqplIkHz",
+  "name": "RETORNO DE STATUS",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "c94953e0-a25f-481b-ad48-7dab6d5de4a0",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f831de43-21dd-40b0-8e4d-cbfb8073a7da",
+      "name": "Webhook",
+      "webhookId": "c94953e0-a25f-481b-ad48-7dab6d5de4a0"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"message\": \"ok\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "cb88d7d6-c279-4205-a085-d592687bf56f",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "bEV4hbeNKgIZm4dF"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "a2df2987-0f9f-480a-9c25-80efdb9564b6",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-08-15T14:46:57.336Z",
+      "updatedAt": "2025-08-15T14:46:57.336Z",
+      "role": "workflow:owner",
+      "workflowId": "ku2XLWhYwqplIkHz",
+      "projectId": "aa1bNLMjpk4LlVBL",
+      "project": {
+        "createdAt": "2025-07-24T21:39:43.180Z",
+        "updatedAt": "2025-07-24T21:40:55.821Z",
+        "id": "aa1bNLMjpk4LlVBL",
+        "name": "IAmanda kupaa <iamanda.suporte@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
