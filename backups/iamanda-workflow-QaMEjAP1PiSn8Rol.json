@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-08-25T04:23:23.687Z",
-  "updatedAt": "2025-08-25T04:23:30.144Z",
+  "updatedAt": "2025-08-25T13:19:53.638Z",
   "id": "QaMEjAP1PiSn8Rol",
   "name": "My workflow",
   "active": true,
@@ -29,8 +29,46 @@
   },
   "staticData": null,
   "meta": null,
-  "pinData": {},
-  "versionId": "000ee373-a70c-4070-96c9-1e4c653a6da8",
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "webhook-kupaa.iamanda.com.br",
+            "user-agent": "LinkedStore Webhook (itmaster@tiendanube.com)",
+            "content-length": "118",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json",
+            "traceparent": "00-0000000000000000505e9ae1c282619d-505e9ae1c282619d-00",
+            "tracestate": "dd=t.dm:3;s:-1",
+            "x-datadog-parent-id": "5791236465266680221",
+            "x-datadog-sampling-priority": "-1",
+            "x-datadog-trace-id": "5791236465266680221",
+            "x-forwarded-for": "18.214.235.111",
+            "x-forwarded-host": "webhook-kupaa.iamanda.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "53854a3c7008",
+            "x-linkedstore-hmac-sha256": "48d3deb30c804cc14fbb56c9eaaf5f49539a387b77e213cc70e5c3a74af635ad",
+            "x-notification-id": "7c761728-ec2b-46d9-8cf3-9d2fd037ce02:c9d720c2-bf34-4c40-8a4d-7ed8f639dfa5",
+            "x-real-ip": "18.214.235.111",
+            "accept-encoding": "gzip"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "store_id": 2155771,
+            "event": "fulfillment/updated",
+            "order_id": 1774733242,
+            "fulfillment_id": "01K3EFQ73JQXSX2Y79CRMT5PGJ"
+          },
+          "webhookUrl": "https://webhook-kupaa.iamanda.com.br/webhook/df0e1fbc-39f0-4c69-bd55-9d29eb6084a2",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "dab45db7-3603-4971-8eb2-22e58d0ec0c7",
   "triggerCount": 1,
   "tags": [],
   "shared": [
